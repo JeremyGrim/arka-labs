@@ -6,3 +6,4 @@ SQLAlchemy>=2
 psycopg2-binary
 pyyaml
 python-dotenv
+prometheus-client

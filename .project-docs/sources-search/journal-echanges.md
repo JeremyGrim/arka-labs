@@ -68,3 +68,22 @@
   - Lancement stack Étape 3, application migrations (`apply_etape5.sh`, `apply_etape5x.sh`), import enrichi, test `db_etape5_check.py` (OK), puis arrêt stack.
 - Vérifications : toutes les commandes exécutées avec succès, `projects.agent_refs` peuplée (`agent_refs=28`).
 - Décisions : l’APP consomme désormais les fonctions SQL, prête pour les adapters agents (Étape 6).
+
+## Échange 006 — 2025-02-14
+
+- Participants : Utilisateur (Archiviste), lead-dev-batisseur.
+- Contexte : intégration des lots 6.1 (Agent-Runner), 6.3 (Flow-Bridge) et 6.4 (Agents UI).
+- Actions 6.1 :
+  - Ajout de `ARKA-RUNNER` (FastAPI `/runner`, Docker overlay, README), migration `070_runtime_sessions.sql`, scripts `apply_runner_db.sh`, tests `tests/system/runner/runner_smoke.py`.
+  - Alignement `contracts/` (OpenAPI/JSONSchema/interfaces) + CI `contracts_lint`, `no_mocks_stubs_6_0` exécutées.
+- Actions 6.3 :
+  - Ajout de `ARKA-ORCH` (service orchestrateur, overlay Docker), migration `080_orchestrator.sql`, scripts `apply_orch_db.sh`, tests `tests/system/orchestrator/*`.
+  - Mise à jour compose runner/orch (paths, working_dir) et application migrations + imports enrichis.
+- Actions 6.4 :
+  - Patch `ARKA-APP` (BFF `orchestrator_proxy`, nouvelles pages React LaunchFlow/SessionView/AgentsDirectory/ProjectsCounters, composants `KV`/`StatusPill`, client `api.ts`, ajout `react-router-dom`).
+  - Ajout du smoke `tests/system/ui/ui_bff_smoke.py`, copie des guides (`README_ETAPE6_4.md`, `PLAN_T1_PLAYBOOK.md`), exécution `npm install` (maj package-lock) après correction des permissions Windows/WSL).
+- Vérifications :
+  - Migrations `apply_runner_db.sh`, `apply_orch_db.sh`, `apply_etape5.sh`, `apply_etape5x.sh` rejouées sur la stack compose ; `import_from_arkos_enriched.py` → `agent_refs=28`.
+  - Tests `python3 tests/system/step5_db/db_etape5_check.py`, `contracts_lint.py`, `no_mocks_stubs_6_0.py`, `npm install` OK (warnings audit acceptés).
+  - Smokes Runner/Orchestrator/UI à relancer après démarrage des overlays (services à l’arrêt hors validation).
+- Décisions : base 6.x opérationnelle (Runner + Orchestrator + UI) avant d’attaquer 6.2 (adapters providers) puis le test terrain T1.

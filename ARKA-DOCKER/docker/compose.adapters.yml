@@ -1,0 +1,37 @@
+version: "3.9"
+services:
+  adapter-codex:
+    build: ./docker/adapter-codex
+    container_name: adapter-codex
+    environment:
+      PYTHONUNBUFFERED: "1"
+      ADAPTER_NAME: codex
+      API_BASE: ${CODEX_API_BASE:-https://api.openai.com/v1}   # exemple compatible OpenAI
+      API_KEY: ${CODEX_API_KEY:-}
+      TIMEOUT_SEC: ${CODEX_TIMEOUT_SEC:-60}
+      FAULT_INJECTION: ${CODEX_FAULT_INJECTION:-none}           # none|timeout|http500
+    ports:
+      - "9093:9093"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9093/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+
+  adapter-openai:
+    build: ./docker/adapter-openai
+    container_name: adapter-openai
+    environment:
+      PYTHONUNBUFFERED: "1"
+      ADAPTER_NAME: openai
+      API_BASE: ${OPENAI_API_BASE:-https://api.openai.com/v1}
+      API_KEY: ${OPENAI_API_KEY:-}
+      TIMEOUT_SEC: ${OPENAI_TIMEOUT_SEC:-60}
+      FAULT_INJECTION: ${OPENAI_FAULT_INJECTION:-none}          # none|timeout|http500
+    ports:
+      - "9094:9093"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9093/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 60

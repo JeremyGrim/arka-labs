@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import (
@@ -12,6 +13,7 @@ from app.routers import (
     participants,
     projects_metrics,
     agents_directory,
+    orchestrator_proxy,
 )
 
 APP = FastAPI(title="ARKA-APP", version="1.0-beta")
@@ -33,3 +35,8 @@ APP.include_router(agents.router, prefix="/api")
 APP.include_router(participants.router, prefix="/api")
 APP.include_router(projects_metrics.router, prefix="/api")
 APP.include_router(agents_directory.router, prefix="/api")
+APP.include_router(orchestrator_proxy.router, prefix="/api")
+
+@APP.get("/metrics")
+def metrics():
+    return generate_latest(), 200, {"Content-Type": CONTENT_TYPE_LATEST}

@@ -1,11 +1,11 @@
 # Local virtual environments
-.venv*
+.venv*/
 
 # Local databases / scratch data
 db/
 
-# Local test sandboxes
-tests/
+# Optional temp test artefacts
+tests/tmp/
 
 # OS junk
 .DS_Store

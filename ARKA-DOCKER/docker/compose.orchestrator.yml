@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  arka-orchestrator:
+    build: ./docker/orchestrator
+    container_name: arka-orchestrator
+    environment:
+      PYTHONUNBUFFERED: "1"
+      RUNNER_URL: http://arka-runner:9091
+      ARKA_OS_ROOT: /app/ARKA_OS
+    volumes:
+      - ../ARKA-OS:/app/ARKA_OS:ro
+      - ../ARKA-META:/app/ARKA_META
+      - ./ARKA-ORCH:/srv/orch:ro
+    command: ["uvicorn", "app.main:APP", "--host", "0.0.0.0", "--port", "9092"]
+    ports:
+      - "9092:9092"
+    depends_on:
+      arka-runner:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9092/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 60

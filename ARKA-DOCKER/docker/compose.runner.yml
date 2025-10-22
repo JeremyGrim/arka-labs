@@ -1,0 +1,28 @@
+version: "3.9"
+services:
+  arka-runner:
+    build: ./docker/runner
+    container_name: arka-runner
+    environment:
+      PYTHONUNBUFFERED: "1"
+      ROUTING_URL: http://arka-routing:8087
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-arka}:${POSTGRES_PASSWORD:-arka}@postgres:5432/${POSTGRES_DB:-arka}
+      ARKA_OS_ROOT: /app/ARKA_OS
+      PROVIDER_ADAPTERS: ${PROVIDER_ADAPTERS:-{"codex":"http://adapter-codex:9093"}}
+    volumes:
+      - ../ARKA-OS:/app/ARKA_OS:ro
+      - ../ARKA-META:/app/ARKA_META
+      - ./ARKA-RUNNER:/srv/runner:ro
+    command: ["uvicorn", "app.main:APP", "--host", "0.0.0.0", "--port", "9091"]
+    ports:
+      - "9091:9091"
+    depends_on:
+      arka-routing:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9091/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
