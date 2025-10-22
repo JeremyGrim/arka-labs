@@ -1,0 +1,32 @@
+{
+  "$id": "https://arka-labs/contracts/jsonschema/gate-awaiting.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "allOf": [
+    {
+      "$ref": "event-envelope.json"
+    }
+  ],
+  "properties": {
+    "event": {
+      "const": "gate.awaiting"
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "gate": {
+          "type": "string",
+          "enum": [
+            "AGP",
+            "ARCHIVISTE"
+          ]
+        },
+        "approve_url": {
+          "type": "string"
+        },
+        "reject_url": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

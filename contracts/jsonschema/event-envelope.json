@@ -1,0 +1,38 @@
+{
+  "$id": "https://arka-labs/contracts/jsonschema/event-envelope.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "event",
+    "time",
+    "session_id"
+  ],
+  "properties": {
+    "event": {
+      "type": "string"
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "step_id": {
+      "type": "string"
+    },
+    "agent_ref": {
+      "type": "string"
+    },
+    "intent": {
+      "type": "string"
+    },
+    "flow_ref": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

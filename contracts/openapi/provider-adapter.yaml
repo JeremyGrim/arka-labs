@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: ARKA Provider-Adapter API
+  version: 1.0.0
+  description: >
+    Contrat HTTP optionnel (plugin externe). En interne, la même interface est exposée en Python/TS (voir adapter_interface/).
+servers:
+  - url: http://localhost:9093
+paths:
+  /healthz:
+    get: { responses: { '200': { description: OK } } }
+  /invoke:
+    post:
+      summary: Appelle un modèle / provider conforme au budget et à la policy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvokeRequest'
+      responses:
+        '200':
+          description: Réponse du provider
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InvokeResponse' }
+        '4xx': { description: Erreur d'entrée / quota / policy }
+        '5xx': { description: Erreur provider }
+components:
+  schemas:
+    InvokeRequest:
+      type: object
+      required: [ provider, operation, input ]
+      properties:
+        provider: { type: string, example: "codex" }
+        operation: { type: string, enum: [ chat, embed, vision, audio ] }
+        model: { type: string }
+        budget_tokens: { type: integer, minimum: 1 }
+        temperature: { type: number, minimum: 0, maximum: 2 }
+        input:
+          type: object
+          properties:
+            messages: { type: array, items: { type: object } }
+            system:   { type: string }
+            tools:    { type: array, items: { type: object } }
+          additionalProperties: true
+        metadata:
+          type: object
+          properties:
+            session_id: { type: string }
+            step_id: { type: string }
+            intent: { type: string }
+            flow_ref: { type: string }
+    InvokeResponse:
+      type: object
+      required: [ output, usage ]
+      properties:
+        output:
+          type: object
+          properties:
+            messages: { type: array, items: { type: object } }
+            text: { type: string }
+            tool_calls: { type: array, items: { type: object } }
+        usage:
+          $ref: '#/components/schemas/Usage'
+        provider: { type: string }
+        model: { type: string }
+    Usage:
+      type: object
+      properties:
+        input_tokens:  { type: integer, minimum: 0 }
+        output_tokens: { type: integer, minimum: 0 }
+        cost:          { type: number, minimum: 0 }

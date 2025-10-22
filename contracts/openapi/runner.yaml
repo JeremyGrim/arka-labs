@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: ARKA Agent-Runner API
+  version: 1.0.0
+  description: >
+    Service stateless exécutant **un step** pour un agent donné, avec journalisation et mémoire.
+    - Charge l'onboarding **client** (`clients/<ID>/agents/<agent_id>/onboarding.yaml`)
+    - Utilise **ARKA_ROUTING** pour résoudre `intent`/`flow_ref`
+    - N'émet **aucun** side-effect hors DB (messages/memory)
+servers:
+  - url: http://localhost:9091
+paths:
+  /healthz:
+    get:
+      summary: Health check
+      responses:
+        '200': { description: OK }
+  /runner/step:
+    post:
+      summary: Exécute un step pour un agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StepRequest'
+      responses:
+        '200':
+          description: Résultat du step
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StepResponse'
+        '400': { description: Mauvaise requête }
+        '5xx': { description: Erreur interne }
+  /runner/session:
+    post:
+      summary: Crée une session logique de run (regroupe plusieurs steps)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SessionCreate' }
+      responses:
+        '201':
+          description: Session créée
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Session' }
+  /runner/session/{id}:
+    get:
+      summary: Récupère l'état d'une session
+      parameters:
+        - in: path
+          name: id
+          schema: { type: string }
+          required: true
+      responses:
+        '200':
+          description: Session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Session' }
+components:
+  schemas:
+    AgentRef:
+      type: string
+      description: "Réf canonique agent: `clients/<CLIENT>/agents/<agent_id>`"
+      pattern: "^clients/[A-Z0-9_-]+/agents/[a-z0-9][a-z0-9-]*$"
+    StepRequest:
+      type: object
+      required: [ session_id, agent_ref, intent, flow_ref, step, payload ]
+      properties:
+        session_id: { type: string }
+        agent_ref:  { $ref: '#/components/schemas/AgentRef' }
+        intent:     { type: string, description: "Intent canonique (ex: AUDIT:RGPD)" }
+        flow_ref:   { type: string, description: "Brique:export (ex: ARKFLOW-04A-WORKFLOWS-AUDIT:AUDIT_RGPD_CHAIN)" }
+        step:       { type: object, additionalProperties: true, description: "Step ARKA_FLOW courant" }
+        payload:    { type: object, additionalProperties: true }
+        provider_policy:
+          type: object
+          description: "Hints/constraints pour Provider-Adapter (budget tokens, modèle, temperature, etc.)"
+          additionalProperties: true
+    Usage:
+      type: object
+      properties:
+        input_tokens:  { type: integer, minimum: 0 }
+        output_tokens: { type: integer, minimum: 0 }
+        cost:          { type: number, minimum: 0 }
+        provider:      { type: string }
+        model:         { type: string }
+    StepResponse:
+      type: object
+      required: [ status ]
+      properties:
+        status: { type: string, enum: [ ok, failed, gated ] }
+        result: { type: object, additionalProperties: true }
+        logs:   { type: array, items: { type: string } }
+        usage:  { $ref: '#/components/schemas/Usage' }
+        gate:
+          type: object
+          properties:
+            kind: { type: string, enum: [AGP, ARCHIVISTE] }
+            reason: { type: string }
+            approve_url: { type: string }
+            reject_url: { type: string }
+    SessionCreate:
+      type: object
+      required: [ client, flow_ref ]
+      properties:
+        client: { type: string, description: "Code client (ex: ACME)" }
+        flow_ref: { type: string }
+        context: { type: object, additionalProperties: true }
+    Session:
+      type: object
+      required: [ id, flow_ref, client, status ]
+      properties:
+        id: { type: string }
+        flow_ref: { type: string }
+        client: { type: string }
+        status: { type: string, enum: [ running, paused, completed, failed ] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }

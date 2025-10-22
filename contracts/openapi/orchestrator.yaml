@@ -1,0 +1,90 @@
+openapi: 3.0.3
+info:
+  title: ARKA Flow-Orchestrator API
+  version: 1.0.0
+  description: >
+    Orchestrateur d'un `flow_ref` ARKA_FLOW (séquentiel + Gates).
+servers:
+  - url: http://localhost:9092
+paths:
+  /healthz:
+    get: { responses: { '200': { description: OK } } }
+  /orchestrator/flow:
+    post:
+      summary: Démarre l'exécution d'un flow_ref
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ client, flow_ref ]
+              properties:
+                client: { type: string }
+                flow_ref: { type: string }
+                options:
+                  type: object
+                  properties:
+                    assign_strategy: { type: string, enum: [auto, manual] }
+                    start_at_step:   { type: integer, minimum: 0 }
+      responses:
+        '201':
+          description: Session orchestrateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrchSession'
+  /orchestrator/session/{id}:
+    get:
+      summary: Récupère l'état d'une session orchestrateur
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrchSession' }
+  /orchestrator/step/{id}/approve:
+    post:
+      summary: Approbe une Gate (AGP/ARCHIVISTE)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Gate approuvée }
+  /orchestrator/step/{id}/reject:
+    post:
+      summary: Rejette une Gate
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Gate rejetée }
+components:
+  schemas:
+    OrchSession:
+      type: object
+      required: [ id, flow_ref, client, status, steps ]
+      properties:
+        id: { type: string }
+        flow_ref: { type: string }
+        client: { type: string }
+        status: { type: string, enum: [ running, paused, completed, failed ] }
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              status: { type: string, enum: [ pending, running, gated, completed, failed ] }
+              agent_ref: { type: string }
+              result: { type: object, additionalProperties: true }

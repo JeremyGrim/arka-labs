@@ -1,0 +1,25 @@
+{
+  "$id": "https://arka-labs/contracts/jsonschema/step-failed.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "allOf": [
+    {
+      "$ref": "event-envelope.json"
+    }
+  ],
+  "properties": {
+    "event": {
+      "const": "step.failed"
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

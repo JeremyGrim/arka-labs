@@ -1,0 +1,25 @@
+{
+  "$id": "https://arka-labs/contracts/jsonschema/step-started.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "allOf": [
+    {
+      "$ref": "event-envelope.json"
+    }
+  ],
+  "properties": {
+    "event": {
+      "const": "step.started"
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "step": {
+          "type": "object"
+        },
+        "provider_policy": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}
