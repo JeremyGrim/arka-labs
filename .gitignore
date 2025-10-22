@@ -10,3 +10,6 @@ tests/tmp/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Optional observability stack (Étape 6.5)
+obs/

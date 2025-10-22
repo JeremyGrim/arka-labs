@@ -87,3 +87,25 @@
   - Tests `python3 tests/system/step5_db/db_etape5_check.py`, `contracts_lint.py`, `no_mocks_stubs_6_0.py`, `npm install` OK (warnings audit acceptés).
   - Smokes Runner/Orchestrator/UI à relancer après démarrage des overlays (services à l’arrêt hors validation).
 - Décisions : base 6.x opérationnelle (Runner + Orchestrator + UI) avant d’attaquer 6.2 (adapters providers) puis le test terrain T1.
+
+## Échange 003 — 2025-10-22
+
+- Intégration Étapes 6.1 à 6.4 dans `arka-labs`.
+  - Copie contrôlée des livrables sandbox (Runner, Provider Adapters, Orchestrator, patch UI) sans scripts ni dossiers temporaires.
+  - Overlay docker ajoutés : `compose.runner.yml`, `compose.adapters.yml`, `compose.orchestrator.yml`.
+  - Migrations Postgres : `070_runtime_sessions.sql`, `080_orchestrator.sql`.
+  - README synthétiques insérés (`ARKA-RUNNER`, `ARKA-ADAPTERS`, `ARKA-ORCH`).
+  - Tests système alignés : `tests/system/runner`, `tests/system/adapters`, `tests/system/orchestrator`, `tests/system/ui` (CI 6.x).
+  - Runner mis à jour (`provider_fallback`).
+- Contrôle Step 6.0 conservé (`contracts/`).
+
+## Échange 007 — 2025-02-14
+
+- Participants : Utilisateur (Archiviste), lead-dev-batisseur.
+- Contexte : mise en place de l’étape 6.5 (Observabilité & Guardrails) et finalisation de l’UI 6.4 côté BFF/React.
+- Actions :
+  - Migration `090_guardrails_security.sql`, scripts `apply_guardrails.sh`/`apply_runner_db.sh`/`apply_orch_db.sh` mis à jour ; patchs Runner & Orchestrator (API keys, quotas tokens, redaction PII, métriques Prometheus) + Dockerfiles (`prometheus-client`).
+  - Ajout des dashboards et compose Prometheus/Grafana (`obs/compose.obs.yml`, `obs/scripts/up_obs.sh`), tests `tests/system/obs/*` (PII unit OK, metrics smoke à relancer avec services).
+  - Patch BFF/UI Agents (6.4) : pages React (LaunchFlow, SessionView, AgentsDirectory, ProjectsCounters), client `api.ts`, dépendances `react-router-dom`, exécution `npm install`.
+- Vérifications : migrations rejouées (runner/orch/guardrails), import enrichi (`agent_refs=28`), tests `pii_redaction_unit.py`, `contracts_lint.py`, `no_mocks_stubs_6_0.py`, `npm install` OK ; smokes metrics/UI en attente de services up.
+- Décisions : stack 6.x complète (Runner, Adapters, Orchestrator, UI, Observabilité) prête pour la suite (adapters 6.2/T1) une fois relancée.
