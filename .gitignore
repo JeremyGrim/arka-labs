@@ -1,0 +1,12 @@
+# Local virtual environments
+.venv*
+
+# Local databases / scratch data
+db/
+
+# Local test sandboxes
+tests/
+
+# OS junk
+.DS_Store
+Thumbs.db

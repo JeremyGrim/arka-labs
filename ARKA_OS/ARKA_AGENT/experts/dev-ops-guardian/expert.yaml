@@ -17,8 +17,8 @@ expertise:
   - arborescence_management
   - naming_validation
   - deployment_strategies
-system_rules_ref: ARKORE17-ORCHESTRATION-RULES:exports.intents.prereqs.all
-orchestration_prereqs_ref: ARKORE17-ORCHESTRATION-RULES:exports.intents.prereqs.devops
+system_rules_ref: ARKFLOW-17-ORCHESTRATION-RULES:exports.intents.prereqs.all
+orchestration_prereqs_ref: ARKFLOW-17-ORCHESTRATION-RULES:exports.intents.prereqs.devops
 available_intents:
 - VALIDATE_NAMING
 - ARCHIVE_CAPTURE
@@ -28,8 +28,8 @@ available_intents:
 - TICKET_CREATE
 - TICKET_UPDATE
 arka_os_refs:
-  nomenclature: ARKORE17-ORCHESTRATION-RULES:exports.nomenclature
-  core_refs: ARKORE17-ORCHESTRATION-RULES:exports.core_refs
+  nomenclature: ARKFLOW-17-ORCHESTRATION-RULES:exports.nomenclature
+  core_refs: ARKFLOW-17-ORCHESTRATION-RULES:exports.core_refs
 capabilities:
   do:
   - Valider nomenclature et arborescence

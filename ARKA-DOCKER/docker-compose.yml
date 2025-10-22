@@ -1,0 +1,99 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: arka-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-arka}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-arka}
+      POSTGRES_DB: ${POSTGRES_DB:-arka}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - ./docker/db/data:/var/lib/postgresql/data
+      - ./docker/db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-arka} -d ${POSTGRES_DB:-arka}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  arka-routing:
+    build: ./docker/routing
+    container_name: arka-routing
+    environment:
+      PYTHONUNBUFFERED: "1"
+      ARKA_ROUTING_DIR: /app/ARKA_OS/ARKA_ROUTING
+    volumes:
+      - ../ARKA_OS:/app/ARKA_OS:ro
+      - ../ARKA_META:/app/ARKA_META
+    command: ["python", "/app/ARKA_OS/ARKA_ROUTING/arkarouting.py", "serve", "--port", "8087"]
+    ports:
+      - "${ARKA_ROUTING_PORT:-8087}:8087"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8087/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+
+  arka-app:
+    build: ./docker/app
+    container_name: arka-app
+    environment:
+      PYTHONUNBUFFERED: "1"
+      ROUTING_URL: http://arka-routing:8087
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-arka}:${POSTGRES_PASSWORD:-arka}@postgres:5432/${POSTGRES_DB:-arka}
+    volumes:
+      - ../ARKA_OS:/app/ARKA_OS:ro
+      - ../ARKA_META:/app/ARKA_META
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+    ports:
+      - "${ARKA_APP_PORT:-8080}:8080"
+    depends_on:
+      arka-routing:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+
+  arka-migrate:
+    image: postgres:16-alpine
+    container_name: arka-migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-arka}
+    volumes:
+      - ./docker/db/migrations:/migrations:ro
+    entrypoint: ["/bin/sh","-lc"]
+    command: >
+      'for f in /migrations/*.sql; do
+         echo ">> Applying $$f";
+         psql -h postgres -U ${POSTGRES_USER:-arka} -d ${POSTGRES_DB:-arka} -f "$$f";
+       done;
+       echo ">> Migration done."'
+    restart: "no"
+
+  adminer:
+    image: adminer:4
+    container_name: arka-adminer
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+      - "8081:8080"
+
+networks:
+  default:
+    name: ${COMPOSE_PROJECT_NAME:-arka}_net

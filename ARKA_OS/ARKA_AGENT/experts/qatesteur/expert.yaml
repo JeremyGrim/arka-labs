@@ -16,8 +16,8 @@ expertise:
   - regression_testing
   - performance_testing
   - acceptance_testing
-system_rules_ref: ARKORE17-ORCHESTRATION-RULES:exports.intents.prereqs.all
-orchestration_prereqs_ref: ARKORE17-ORCHESTRATION-RULES:exports.intents.prereqs.qa
+system_rules_ref: ARKFLOW-17-ORCHESTRATION-RULES:exports.intents.prereqs.all
+orchestration_prereqs_ref: ARKFLOW-17-ORCHESTRATION-RULES:exports.intents.prereqs.qa
 available_intents:
 - TICKET_VALIDATE
 - REPORT_CREATE
@@ -25,8 +25,8 @@ available_intents:
 - DOCUMENT_UPDATE
 - REVIEW_DELIVERABLE
 arka_os_refs:
-  nomenclature: ARKORE17-ORCHESTRATION-RULES:exports.nomenclature
-  core_refs: ARKORE17-ORCHESTRATION-RULES:exports.core_refs
+  nomenclature: ARKFLOW-17-ORCHESTRATION-RULES:exports.nomenclature
+  core_refs: ARKFLOW-17-ORCHESTRATION-RULES:exports.core_refs
 capabilities:
   do:
   - Créer plans de test

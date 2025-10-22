@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+requests
+pydantic>=2
+SQLAlchemy>=2
+psycopg2-binary
+pyyaml
+python-dotenv

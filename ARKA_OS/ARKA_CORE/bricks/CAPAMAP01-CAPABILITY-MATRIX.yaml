@@ -129,7 +129,7 @@ capabilities:
 provides: ["capability_matrix"]
 requires:
   - "ARKORE12-ACTION-KEYS@>=2.1.0"
-  - "ARKORE17-ORCHESTRATION-RULES@>=2.0.0"
+  - "ARKFLOW-17-ORCHESTRATION-RULES@>=2.0.0"
 contracts:
   invariants:
     - "each intent appears in at least one capability entry"

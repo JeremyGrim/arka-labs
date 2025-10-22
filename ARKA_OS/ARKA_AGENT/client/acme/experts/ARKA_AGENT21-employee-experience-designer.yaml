@@ -17,8 +17,8 @@ expertise:
     - employee_lifecycle
 
 # === ORCHESTRATION (CRITIQUE : intents + prérequis) ===
-system_rules_ref: ARKORE17-ORCHESTRATION-RULES:exports.intents.prereqs.all
-orchestration_prereqs_ref: ARKORE17-ORCHESTRATION-RULES:exports.intents.prereqs.common
+system_rules_ref: ARKFLOW-17-ORCHESTRATION-RULES:exports.intents.prereqs.all
+orchestration_prereqs_ref: ARKFLOW-17-ORCHESTRATION-RULES:exports.intents.prereqs.common
 available_intents:
   - ANALYSIS_CREATE
   - SURVEY_CREATE
@@ -28,8 +28,8 @@ available_intents:
 
 # === ACCÈS RAPIDE ARKA_OS ===
 arka_os_refs:
-  nomenclature: ARKORE17-ORCHESTRATION-RULES:exports.nomenclature
-  core_refs: ARKORE17-ORCHESTRATION-RULES:exports.core_refs
+  nomenclature: ARKFLOW-17-ORCHESTRATION-RULES:exports.nomenclature
+  core_refs: ARKFLOW-17-ORCHESTRATION-RULES:exports.core_refs
 
 # === CAPACITÉS ===
 capabilities:

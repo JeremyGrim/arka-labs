@@ -15,8 +15,8 @@ expertise:
     - escalation_management
 
 # === ORCHESTRATION (CRITIQUE : intents + prérequis) ===
-system_rules_ref: ARKORE17-ORCHESTRATION-RULES:exports.intents.prereqs.all  # Règles système obligatoires
-orchestration_prereqs_ref: ARKORE17-ORCHESTRATION-RULES:exports.intents.prereqs.agp  # Inclut all + common + agp
+system_rules_ref: ARKFLOW-17-ORCHESTRATION-RULES:exports.intents.prereqs.all  # Règles système obligatoires
+orchestration_prereqs_ref: ARKFLOW-17-ORCHESTRATION-RULES:exports.intents.prereqs.agp  # Inclut all + common + agp
 available_intents:
   - ADR_CREATE
   - GATE_NOTIFY
@@ -31,8 +31,8 @@ available_intents:
 
 # === ACCÈS RAPIDE ARKA_OS ===
 arka_os_refs:
-  nomenclature: ARKORE17-ORCHESTRATION-RULES:exports.nomenclature
-  core_refs: ARKORE17-ORCHESTRATION-RULES:exports.core_refs
+  nomenclature: ARKFLOW-17-ORCHESTRATION-RULES:exports.nomenclature
+  core_refs: ARKFLOW-17-ORCHESTRATION-RULES:exports.core_refs
 
 # === CAPACITÉS ===
 capabilities:
