@@ -1,6 +1,6 @@
 # Journal des échanges Lead Dev ⇄ Archiviste
 
-## Échange 001 — 2025-02-14
+## Échange 001 — 2025-10-22
 
 - Participants : Utilisateur (Archiviste), lead-dev-batisseur.
 - Contexte : reprise de la mission Docker Étape 3 sur le dépôt maître (non sandbox).
@@ -13,7 +13,7 @@
 - Vérifications : `docker compose --env-file .env.example config` seulement (stack non démarrée dans ce dépôt, `.env` non fourni).
 - Décisions : garder `ARKA-DOCKER/` à la racine (évite dépendances croisées), ajouter ce journal et l’enrichir à chaque échange avant toute action suivante.
 
-## Échange 002 — 2025-02-14
+## Échange 002 — 2025-10-22
 
 - Participants : Utilisateur (Archiviste), lead-dev-batisseur.
 - Contexte : lancement de la mission Étape 4 (migration APP) sur le dépôt maître.
@@ -25,7 +25,7 @@
 - Vérifications : `docker compose --env-file .env.example config` (overlay non lancé, .env à préparer avant run).
 - Décisions : laisser l’overlay Docker en configuration par défaut, préparer les prochaines étapes (tests backend/UI) une fois la stack Étape 3 reprise.
 
-## Échange 003 — 2025-02-14
+## Échange 003 — 2025-10-22
 
 - Participants : Utilisateur (Archiviste), lead-dev-batisseur.
 - Contexte : consolidation Étape 4.2 (tests anti-mock/stub + E2E) à intégrer dans le dépôt maître.
@@ -44,7 +44,7 @@
 - Déplacement du bundle vers `tests/system/step4_consolidation/` (ci + runner + README).
 - Exécution `bash tests/system/step4_consolidation/run_step4_consolidation.sh` → tous les checks OK (`routing_health`, `schema_check`, `no_mocks_stubs`, `e2e_monolith`).
 
-## Échange 004 — 2025-02-14
+## Échange 004 — 2025-10-22
 
 - Participants : Utilisateur (Archiviste), lead-dev-batisseur.
 - Contexte : intégration Étape 5 (PostgreSQL) – migrations/fonctions/vues + scripts import/tests.
@@ -58,7 +58,7 @@
 - Vérifications : montage complet Étape 5 (migrations + import + check) validé en local, stack arrêtée ensuite (`./scripts/make.sh down`).
 - Décisions : `db/etape5/` devient la référence pour la modélisation Postgres, tests regroupés sous `tests/system/step5_db/`.
 
-## Échange 005 — 2025-02-14
+## Échange 005 — 2025-10-22
 
 - Participants : Utilisateur (Archiviste), lead-dev-batisseur.
 - Contexte : patch Étape 5.x (attache APP ↔ DB) pour exploiter les fonctions SQL `messages.*` et l’annuaire agents.
@@ -69,7 +69,7 @@
 - Vérifications : toutes les commandes exécutées avec succès, `projects.agent_refs` peuplée (`agent_refs=28`).
 - Décisions : l’APP consomme désormais les fonctions SQL, prête pour les adapters agents (Étape 6).
 
-## Échange 006 — 2025-02-14
+## Échange 006 — 2025-10-22
 
 - Participants : Utilisateur (Archiviste), lead-dev-batisseur.
 - Contexte : intégration des lots 6.1 (Agent-Runner), 6.3 (Flow-Bridge) et 6.4 (Agents UI).
@@ -99,7 +99,7 @@
   - Runner mis à jour (`provider_fallback`).
 - Contrôle Step 6.0 conservé (`contracts/`).
 
-## Échange 007 — 2025-02-14
+## Échange 007 — 2025-10-22
 
 - Participants : Utilisateur (Archiviste), lead-dev-batisseur.
 - Contexte : mise en place de l’étape 6.5 (Observabilité & Guardrails) et finalisation de l’UI 6.4 côté BFF/React.
@@ -109,3 +109,8 @@
   - Patch BFF/UI Agents (6.4) : pages React (LaunchFlow, SessionView, AgentsDirectory, ProjectsCounters), client `api.ts`, dépendances `react-router-dom`, exécution `npm install`.
 - Vérifications : migrations rejouées (runner/orch/guardrails), import enrichi (`agent_refs=28`), tests `pii_redaction_unit.py`, `contracts_lint.py`, `no_mocks_stubs_6_0.py`, `npm install` OK ; smokes metrics/UI en attente de services up.
 - Décisions : stack 6.x complète (Runner, Adapters, Orchestrator, UI, Observabilité) prête pour la suite (adapters 6.2/T1) une fois relancée.
+
+## Échange 008 — 2025-10-22
+
+- Actualisation du README principal : ton produit (valeur, panorama, quickstart, roadmap) aligné Étapes 3→6.4.
+- Nettoyage `git status` (ready pour commits suivants).
