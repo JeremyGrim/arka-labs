@@ -1,5 +1,5 @@
 # app/routers/orchestrator.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional, Any, Dict, List
 from sqlalchemy.orm import Session
@@ -70,8 +70,22 @@ def _update_session(db: Session, sid: str, **fields):
 def json_dump(obj) -> str:
     import json; return json.dumps(obj, ensure_ascii=False)
 
+def _metrics(request: Request) -> dict:
+    return getattr(request.app.state, "metrics", {})
+
+def _inc(metrics: dict, key: str, value: int = 1):
+    counter = metrics.get(key)
+    if counter:
+        counter.inc(value)
+
+def _dec(metrics: dict, key: str, value: int = 1):
+    counter = metrics.get(key)
+    if counter:
+        counter.dec(value)
+
 @router.post("/flow", response_model=OrchSession, status_code=201)
-def start_flow(req: StartFlow, db: Session = Depends(get_db)):
+def start_flow(req: StartFlow, request: Request, db: Session = Depends(get_db)):
+    metrics = _metrics(request)
     try:
         steps = load_steps(req.flow_ref)
     except Exception as e:
@@ -82,6 +96,8 @@ def start_flow(req: StartFlow, db: Session = Depends(get_db)):
         raise HTTPException(502, detail=str(e))
     orch_id = str(uuid.uuid4())
     _insert_session(db, orch_id, req.client, req.flow_ref, runner_sid)
+    _inc(metrics, "sessions_started_total")
+    _inc(metrics, "sessions_running")
     _insert_steps(db, orch_id, steps, start_at=req.options.start_at or 0)
     # exécuter séquentiellement jusqu'à gate/fin/erreur
     while True:
@@ -93,12 +109,16 @@ def start_flow(req: StartFlow, db: Session = Depends(get_db)):
         if gate in ('AGP','ARCHIVISTE'):
             _update_step_status(db, step_id, 'gated', result={"gate": gate})
             _update_session(db, orch_id, status='paused', current_index=idx)
+            _inc(metrics, "steps_gated_total")
+            _inc(metrics, "sessions_paused_total")
             break
         # assignation agent
         agent_ref = pick_agent_for_role(db, req.client, role)
         if not agent_ref:
             _update_step_status(db, step_id, 'failed', result={"error":"aucun agent pour role", "role": role})
             _update_session(db, orch_id, status='failed', current_index=idx)
+            _inc(metrics, "steps_failed_total")
+            _inc(metrics, "sessions_failed_total")
             break
         # appel Runner
         try:
@@ -106,20 +126,29 @@ def start_flow(req: StartFlow, db: Session = Depends(get_db)):
         except RunnerError as e:
             _update_step_status(db, step_id, 'failed', result={"error": str(e)})
             _update_session(db, orch_id, status='failed', current_index=idx)
+            _inc(metrics, "steps_failed_total")
+            _inc(metrics, "sessions_failed_total")
             break
         if rsp.get("status") == "gated":
             _update_step_status(db, step_id, 'gated', result=rsp)
             _update_session(db, orch_id, status='paused', current_index=idx)
+            _inc(metrics, "steps_gated_total")
+            _inc(metrics, "sessions_paused_total")
             break
         elif rsp.get("status") == "ok":
             _update_step_status(db, step_id, 'completed', result=rsp)
             _update_session(db, orch_id, current_index=idx+1)
+            _inc(metrics, "steps_completed_total")
             continue
         else:
             _update_step_status(db, step_id, 'failed', result=rsp)
             _update_session(db, orch_id, status='failed', current_index=idx)
+            _inc(metrics, "steps_failed_total")
+            _inc(metrics, "sessions_failed_total")
             break
     s = _get_session(db, orch_id)
+    if s and s.status in ("completed", "failed"):
+        _dec(metrics, "sessions_running")
     return OrchSession(id=s.id, client=s.client, flow_ref=s.flow_ref, status=s.status, current_index=s.current_index, runner_session_id=s.runner_session_id)
 
 @router.get("/session/{sid}", response_model=OrchSession)
@@ -134,7 +163,8 @@ def list_steps(sid: str, db: Session = Depends(get_db)):
     return {"items": [dict(r) for r in rows]}
 
 @router.post("/step/{id}/approve")
-def approve_gate(id: str, db: Session = Depends(get_db)):
+def approve_gate(id: str, request: Request, db: Session = Depends(get_db)):
+    metrics = _metrics(request)
     st = db.execute(text("SELECT orch_id, idx, status FROM runtime.orch_steps WHERE id=:id"), {"id": id}).first()
     if not st: raise HTTPException(404, detail="step inconnu")
     if st.status != 'gated': raise HTTPException(400, detail="step non gated")
@@ -153,33 +183,55 @@ def approve_gate(id: str, db: Session = Depends(get_db)):
         if gate in ('AGP','ARCHIVISTE'):
             _update_step_status(db, step_id, 'gated', result={"gate": gate})
             _update_session(db, sid, status='paused', current_index=idx)
+            _inc(metrics, "steps_gated_total")
+            _inc(metrics, "sessions_paused_total")
             break
         agent_ref = pick_agent_for_role(db, sess.client, role)
         if not agent_ref:
             _update_step_status(db, step_id, 'failed', result={"error":"aucun agent pour role", "role": role})
-            _update_session(db, sid, status='failed', current_index=idx); break
+            _update_session(db, sid, status='failed', current_index=idx)
+            _inc(metrics, "steps_failed_total")
+            _inc(metrics, "sessions_failed_total")
+            break
         try:
             rsp = run_step(sess.runner_session_id, agent_ref, sess.flow_ref, {"name": name, "role": role})
         except RunnerError as e:
             _update_step_status(db, step_id, 'failed', result={"error": str(e)})
-            _update_session(db, sid, status='failed', current_index=idx); break
+            _update_session(db, sid, status='failed', current_index=idx)
+            _inc(metrics, "steps_failed_total")
+            _inc(metrics, "sessions_failed_total")
+            break
         if rsp.get("status") == "ok":
             _update_step_status(db, step_id, 'completed', result=rsp)
-            _update_session(db, sid, current_index=idx+1); continue
+            _update_session(db, sid, current_index=idx+1)
+            _inc(metrics, "steps_completed_total")
+            continue
         elif rsp.get("status") == "gated":
             _update_step_status(db, step_id, 'gated', result=rsp)
-            _update_session(db, sid, status='paused', current_index=idx); break
+            _update_session(db, sid, status='paused', current_index=idx)
+            _inc(metrics, "steps_gated_total")
+            _inc(metrics, "sessions_paused_total")
+            break
         else:
             _update_step_status(db, step_id, 'failed', result=rsp)
-            _update_session(db, sid, status='failed', current_index=idx); break
+            _update_session(db, sid, status='failed', current_index=idx)
+            _inc(metrics, "steps_failed_total")
+            _inc(metrics, "sessions_failed_total")
+            break
     s = _get_session(db, sid)
+    if s and s.status in ("completed", "failed"):
+        _dec(metrics, "sessions_running")
     return {"ok": True, "session": {"id": s.id, "status": s.status, "current_index": s.current_index}}
 
 @router.post("/step/{id}/reject")
-def reject_gate(id: str, db: Session = Depends(get_db)):
+def reject_gate(id: str, request: Request, db: Session = Depends(get_db)):
+    metrics = _metrics(request)
     st = db.execute(text("SELECT orch_id, idx, status FROM runtime.orch_steps WHERE id=:id"), {"id": id}).first()
     if not st: raise HTTPException(404, detail="step inconnu")
     if st.status != 'gated': raise HTTPException(400, detail="step non gated")
     db.execute(text("UPDATE runtime.orch_steps SET status='failed' WHERE id=:id"), {"id": id}); db.commit()
     _update_session(db, st.orch_id, status='failed', current_index=st.idx)
+    _inc(metrics, "steps_failed_total")
+    _inc(metrics, "sessions_failed_total")
+    _dec(metrics, "sessions_running")
     return {"ok": True}

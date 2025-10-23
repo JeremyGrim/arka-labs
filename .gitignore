@@ -13,3 +13,7 @@ Thumbs.db
 
 # Optional observability stack (Étape 6.5)
 obs/
+
+# Project-specific artefacts
+.project-docs/
+T1_DEPLOY/

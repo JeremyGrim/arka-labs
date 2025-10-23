@@ -1,10 +1,10 @@
 # app/routers/runner.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from typing import Any, Optional, Dict
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-import uuid, re, json
+import uuid, re, os
 
 from app.deps.db import get_db, create_thread, post_message, add_participant
 from app.services.onboarding import load_onboarding
@@ -12,32 +12,6 @@ from app.services.routing import resolve as routing_resolve
 from app.services.provider import invoke, ProviderError
 
 router = APIRouter()
-
-
-def _invoke_with_fallback(policy: dict, onboarding: dict, payload: dict, metadata: dict):
-    provider = policy.get("provider") or (onboarding.get("provider", {}) or {}).get("default")
-    fallbacks = [p for p in (policy.get("provider_fallback") or []) if p]
-    candidates = []
-    if provider:
-        candidates.append(provider)
-    candidates.extend([p for p in fallbacks if p != provider])
-    if not candidates:
-        raise HTTPException(400, detail="provider non défini (policy.provider, onboarding.provider.default ou provider_fallback)")
-
-    operation = policy.get("operation", "chat")
-    model = policy.get("model") or (onboarding.get("provider", {}) or {}).get("model")
-    budget_tokens = policy.get("budget_tokens") or 8192
-    temperature = policy.get("temperature") or 0.2
-
-    last_err = None
-    for prov in candidates:
-        try:
-            return invoke(prov, operation, model, budget_tokens, temperature, payload, metadata=metadata)
-        except ProviderError as err:
-            last_err = err
-            continue
-    detail = f"providers épuisés: {last_err}" if last_err else "aucun provider utilisable"
-    raise HTTPException(502, detail=detail)
 
 class StepModel(BaseModel):
     name: Optional[str] = None
@@ -73,6 +47,55 @@ class SessionOut(BaseModel):
     client: str
     status: str
 
+PII_REDACTION = os.environ.get("PII_REDACTION", "off").lower() in ("1", "true", "on")
+
+def redact_text(s: str) -> str:
+    s = re.sub(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+", "[REDACTED_EMAIL]", s)
+    s = re.sub(r"\b(?:\+\d{1,3}[- ]?)?(?:\d[ -]?){9,}\b", "[REDACTED_PHONE]", s)
+    s = re.sub(r"\b[A-Z]{2}\d{2}[A-Z0-9]{1,30}\b", "[REDACTED_IBAN]", s)
+    return s
+
+def sanitize_messages(msgs: list[dict] | None) -> list[dict]:
+    if not msgs:
+        return []
+    if not PII_REDACTION:
+        return list(msgs)
+    out: list[dict] = []
+    for m in msgs:
+        content = m.get("content")
+        if isinstance(content, str):
+            content = redact_text(content)
+        out.append({**m, "content": content})
+    return out
+
+def quota_guard(db: Session, session_id: str, will_consume: Optional[int] = None):
+    row = db.execute(
+        text("SELECT quota_tokens, spent_tokens FROM runtime.sessions WHERE id=:id"),
+        {"id": session_id},
+    ).first()
+    if not row:
+        raise HTTPException(404, detail="session inconnue")
+    quota = row.quota_tokens
+    spent = row.spent_tokens or 0
+    if quota is None:
+        return
+    projected = spent + (will_consume or 0)
+    if spent >= quota or projected > quota:
+        raise HTTPException(429, detail="quota exceeded")
+
+def _add_spent_tokens(db: Session, session_id: str, delta: int):
+    if not delta:
+        return
+    db.execute(
+        text(
+            "UPDATE runtime.sessions "
+            "SET spent_tokens = COALESCE(spent_tokens, 0) + :delta "
+            "WHERE id = :id"
+        ),
+        {"delta": int(delta), "id": session_id},
+    )
+    db.commit()
+
 def _session_insert(db: Session, sid: str, client: str, flow_ref: str):
     db.execute(text("""INSERT INTO runtime.sessions(id, client, flow_ref, status) VALUES (:id, :c, :f, 'running')
                       ON CONFLICT (id) DO UPDATE SET client=:c, flow_ref=:f"""), {"id": sid, "c": client, "f": flow_ref})
@@ -99,10 +122,18 @@ def get_session(sid: str, db: Session = Depends(get_db)):
     return SessionOut(id=row.id, client=row.client, flow_ref=row.flow_ref, status=row.status)
 
 @router.post("/step", response_model=StepResponse)
-def run_step(req: StepRequest, db: Session = Depends(get_db)):
+def run_step(req: StepRequest, request: Request, db: Session = Depends(get_db)):
+    metrics = getattr(request.app.state, "metrics", {})
+    steps_counter = metrics.get("steps_total")
+    failures_counter = metrics.get("failures_total")
+    gate_counter = metrics.get("gate_pauses_total")
+    tokens_counter = metrics.get("tokens_spent_total")
+
     # 1) Validate agent_ref & onboarding
     client, agent_id = _validate_agent_ref(req.agent_ref)
     ob = load_onboarding(req.agent_ref)
+    if not ob:
+        raise HTTPException(404, detail="onboarding introuvable")
 
     # 2) Resolve intent/flow_ref if needed
     flow_ref = req.flow_ref
@@ -116,29 +147,43 @@ def run_step(req: StepRequest, db: Session = Depends(get_db)):
     step_gate = (req.step or {}).get("gate") or (req.step or {}).get("requires_gate")
     if step_gate in ("AGP","ARCHIVISTE"):
         _session_update_status(db, req.session_id, "paused")
+        if gate_counter: gate_counter.inc()
         return StepResponse(status="gated", gate={"kind": step_gate, "reason": "Gate requise par step"})
 
     # 4) Prepare provider call from provider_policy or onboarding
     policy = req.provider_policy or {}
+    provider = policy.get("provider") or (ob.get("provider",{}) or {}).get("default")
+    operation = policy.get("operation", "chat")
+    model = policy.get("model") or (ob.get("provider",{}) or {}).get("model")
+    budget_tokens = policy.get("budget_tokens") or 8192
+    temperature = policy.get("temperature") or 0.2
+    if not provider:
+        raise HTTPException(400, detail="provider non défini (policy.provider ou onboarding.provider.default)")
 
-    # 5) Compose input messages
+    # 5) Guard quotas & compose input messages
+    quota_guard(db, req.session_id, budget_tokens if isinstance(budget_tokens, int) else None)
     sys_prompt = (ob.get("prompts",{}) or {}).get("system") or ""
     messages = req.payload.get("messages") or []
-    input = {"messages": messages, "system": sys_prompt, "tools": req.payload.get("tools")}
+    sanitized_messages = sanitize_messages(messages)
+    input_payload = {"messages": messages, "system": sys_prompt, "tools": req.payload.get("tools")}
 
-    # 6) Call adapter (fallback aware)
+    # 6) Call adapter
     try:
-        rsp = _invoke_with_fallback(
-            policy,
-            ob,
-            input,
-            metadata={"session_id": req.session_id, "intent": req.intent, "flow_ref": flow_ref, "agent_ref": req.agent_ref}
-        )
-    except HTTPException:
-        _session_update_status(db, req.session_id, "failed")
-        raise
+        auth_mode = policy.get("auth_mode")
+        meta = {"session_id": req.session_id, "intent": req.intent, "flow_ref": flow_ref, "agent_ref": req.agent_ref}
+        if auth_mode:
+            meta["auth_mode"] = auth_mode
+        rsp = invoke(
+            provider,
+            operation,
+            model,
+            budget_tokens,
+            temperature,
+            input_payload,
+            metadata=meta)
     except ProviderError as e:
         _session_update_status(db, req.session_id, "failed")
+        if failures_counter: failures_counter.inc()
         raise HTTPException(502, detail=str(e))
 
     # 7) Persist message & memory
@@ -163,15 +208,34 @@ def run_step(req: StepRequest, db: Session = Depends(get_db)):
         add_participant(db, thread_id, kind="agent", ref=req.agent_ref)
 
     # post result message
+    output = rsp.get("output") or {}
+    if isinstance(output, dict):
+        output = dict(output)
+        text_out = output.get("text")
+        if isinstance(text_out, str):
+            output["text"] = redact_text(text_out) if PII_REDACTION else text_out
+        msgs = output.get("messages")
+        if isinstance(msgs, list):
+            output["messages"] = sanitize_messages(msgs)
+    usage = rsp.get("usage") or {}
     post_message(db, thread_id, author_kind="agent", author_ref=req.agent_ref, content={
         "session_id": req.session_id,
         "flow_ref": flow_ref,
         "step": req.step,
-        "result": rsp.get("output"),
-        "usage": rsp.get("usage"),
+        "result": output,
+        "usage": usage,
         "provider": rsp.get("provider"), "model": rsp.get("model")
     })
 
     # 8) Update session status
     _session_update_status(db, req.session_id, "running")
-    return StepResponse(status="ok", result=rsp.get("output"), usage=rsp.get("usage"), logs=["step executed"])
+    if steps_counter: steps_counter.inc()
+    tokens_used = usage.get("total_tokens") or usage.get("tokens_spent") or usage.get("total") or 0
+    try:
+        tokens_value = int(tokens_used)
+    except (TypeError, ValueError):
+        tokens_value = 0
+    if tokens_value:
+        _add_spent_tokens(db, req.session_id, tokens_value)
+        if tokens_counter: tokens_counter.inc(tokens_value)
+    return StepResponse(status="ok", result=output, usage=usage, logs=["step executed"])

@@ -1,0 +1,8 @@
+.git
+node_modules
+tests
+contracts
+db
+T1_DEPLOY
+obs/docker/prometheus/data
+ARKA-DOCKER/docker/db/data

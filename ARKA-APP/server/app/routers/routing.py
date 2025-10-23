@@ -11,7 +11,8 @@ def catalog(facet: str | None = None, grep: str | None = None, client: str | Non
         r.raise_for_status()
         return r.json()
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Routing error: {e}")
+        # fallback stub to keep UI responsive when routing backend est en mode stub
+        return {"items": [], "fallback": True, "error": str(e)}
 
 @router.get("/lookup")
 def lookup(term: str):
@@ -20,7 +21,7 @@ def lookup(term: str):
         r.raise_for_status()
         return r.json()
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Routing error: {e}")
+        return {"items": [], "fallback": True, "error": str(e)}
 
 @router.get("/resolve")
 def resolve(intent: str | None = None, term: str | None = None, client: str | None = None):
@@ -29,4 +30,4 @@ def resolve(intent: str | None = None, term: str | None = None, client: str | No
         r.raise_for_status()
         return r.json()
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Routing error: {e}")
+        return {"items": [], "fallback": True, "error": str(e)}

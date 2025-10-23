@@ -1,9 +1,9 @@
-# app/routers/invoke.py
+# REPLACEMENT — ADAPTER */app/routers/invoke.py
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import Any, Optional, Dict
-from app.deps.config import ADAPTER_NAME, ok
-from app.services.provider_impl import chat, embed, AdapterError
+from app.deps.config import ADAPTER_NAME, ok, AUTH_MODE, API_KEY
+from app.services.provider_impl import chat, embed, chat_cli, AdapterError
 
 router = APIRouter()
 
@@ -20,7 +20,7 @@ class InvokeRequest(BaseModel):
     budget_tokens: Optional[int] = None
     temperature: Optional[float] = None
     input: InvokeInput
-    metadata: Optional[Dict[str,Any]] = None
+    metadata: Optional[Dict[str,Any]] = None   # peut contenir {auth_mode:"api_key|cli|auto"}
 
 class InvokeResponse(BaseModel):
     output: Dict[str,Any]
@@ -28,14 +28,24 @@ class InvokeResponse(BaseModel):
     provider: Optional[str] = None
     model: Optional[str] = None
 
+def decide_mode(metadata: Optional[Dict[str,Any]]) -> str:
+    mode = (metadata or {}).get("auth_mode") or AUTH_MODE
+    if mode == "auto":
+        return "api_key" if API_KEY else "cli"
+    return mode
+
 @router.post("/invoke", response_model=InvokeResponse)
 def invoke(req: InvokeRequest):
-    if not ok():
-        raise HTTPException(400, detail=f"adapter {ADAPTER_NAME} non configuré (API_BASE/API_KEY requis)")
+    mode = decide_mode(req.metadata)
     try:
         if req.operation == "chat":
-            out, usage, pv, model = chat(req.model, req.temperature, req.budget_tokens, req.input.model_dump())
+            if mode == "cli":
+                out, usage, pv, model = chat_cli(req.model, req.temperature, req.budget_tokens, req.input.model_dump())
+            else:
+                out, usage, pv, model = chat(req.model, req.temperature, req.budget_tokens, req.input.model_dump())
         elif req.operation == "embed":
+            if mode == "cli":
+                raise HTTPException(400, detail="operation embed non supportée en mode CLI")
             out, usage, pv, model = embed(req.model, req.input.model_dump())
         else:
             raise HTTPException(400, detail=f"operation non supportée: {req.operation}")

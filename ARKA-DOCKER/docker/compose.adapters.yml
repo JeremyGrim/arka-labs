@@ -1,7 +1,9 @@
 version: "3.9"
 services:
   adapter-codex:
-    build: ./docker/adapter-codex
+    build:
+      context: ${PWD}
+      dockerfile: ARKA-DOCKER/docker/adapter-codex/Dockerfile
     container_name: adapter-codex
     environment:
       PYTHONUNBUFFERED: "1"
@@ -10,6 +12,10 @@ services:
       API_KEY: ${CODEX_API_KEY:-}
       TIMEOUT_SEC: ${CODEX_TIMEOUT_SEC:-60}
       FAULT_INJECTION: ${CODEX_FAULT_INJECTION:-none}           # none|timeout|http500
+      AUTH_MODE: ${CODEX_AUTH_MODE:-auto}
+      CLI_CMD: ${CODEX_CLI_CMD:-ollama}
+      CLI_CHAT_ARGS_TEMPLATE: ${CODEX_CLI_CHAT_ARGS_TEMPLATE:-run {model}}
+      CLI_TIMEOUT_SEC: ${CODEX_CLI_TIMEOUT_SEC:-120}
     ports:
       - "9093:9093"
     healthcheck:
@@ -19,7 +25,9 @@ services:
       retries: 60
 
   adapter-openai:
-    build: ./docker/adapter-openai
+    build:
+      context: ${PWD}
+      dockerfile: ARKA-DOCKER/docker/adapter-openai/Dockerfile
     container_name: adapter-openai
     environment:
       PYTHONUNBUFFERED: "1"
@@ -28,6 +36,10 @@ services:
       API_KEY: ${OPENAI_API_KEY:-}
       TIMEOUT_SEC: ${OPENAI_TIMEOUT_SEC:-60}
       FAULT_INJECTION: ${OPENAI_FAULT_INJECTION:-none}          # none|timeout|http500
+      AUTH_MODE: ${OPENAI_AUTH_MODE:-auto}
+      CLI_CMD: ${OPENAI_CLI_CMD:-ollama}
+      CLI_CHAT_ARGS_TEMPLATE: ${OPENAI_CLI_CHAT_ARGS_TEMPLATE:-run {model}}
+      CLI_TIMEOUT_SEC: ${OPENAI_CLI_TIMEOUT_SEC:-120}
     ports:
       - "9094:9093"
     healthcheck:

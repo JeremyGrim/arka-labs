@@ -6,10 +6,20 @@ import os, requests
 
 router = APIRouter()
 ORCH_URL = os.environ.get("ORCH_URL", "http://arka-orchestrator:9092")
+ORCH_API_KEY = os.environ.get("ORCH_API_KEY")
+
+def _headers():
+    if ORCH_API_KEY:
+        return {"X-API-Key": ORCH_API_KEY}
+    return None
 
 def _fwd(method: str, path: str, **kwargs):
     url = ORCH_URL.rstrip('/') + path
-    r = requests.request(method, url, timeout=60, **kwargs)
+    headers = kwargs.pop("headers", {}) or {}
+    api_headers = _headers()
+    if api_headers:
+        headers.update(api_headers)
+    r = requests.request(method, url, timeout=60, headers=headers, **kwargs)
     if r.status_code >= 400:
         raise HTTPException(r.status_code, detail=r.text[:600])
     return r.json() if "application/json" in r.headers.get("content-type","") else r.text
@@ -17,7 +27,11 @@ def _fwd(method: str, path: str, **kwargs):
 @router.get("/orch/healthz")
 def health():
     try:
-        r = requests.get(ORCH_URL.rstrip('/') + "/healthz", timeout=5)
+        r = requests.get(
+            ORCH_URL.rstrip('/') + "/healthz",
+            timeout=5,
+            headers=_headers(),
+        )
         r.raise_for_status()
         return {"ok": True}
     except Exception as e:

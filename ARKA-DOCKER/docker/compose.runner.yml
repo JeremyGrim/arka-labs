@@ -1,7 +1,9 @@
 version: "3.9"
 services:
   arka-runner:
-    build: ./docker/runner
+    build:
+      context: ${PWD}
+      dockerfile: ARKA-DOCKER/docker/runner/Dockerfile
     container_name: arka-runner
     environment:
       PYTHONUNBUFFERED: "1"
@@ -9,10 +11,12 @@ services:
       DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-arka}:${POSTGRES_PASSWORD:-arka}@postgres:5432/${POSTGRES_DB:-arka}
       ARKA_OS_ROOT: /app/ARKA_OS
       PROVIDER_ADAPTERS: ${PROVIDER_ADAPTERS:-{"codex":"http://adapter-codex:9093"}}
+      RUNNER_API_KEYS: ${RUNNER_API_KEYS:-}
+      PII_REDACTION: ${PII_REDACTION:-off}
     volumes:
-      - ../ARKA-OS:/app/ARKA_OS:ro
-      - ../ARKA-META:/app/ARKA_META
-      - ./ARKA-RUNNER:/srv/runner:ro
+      - ${PWD}/ARKA_OS:/app/ARKA_OS:ro
+      - ${PWD}/ARKA_META:/app/ARKA_META
+      - ${PWD}/ARKA-RUNNER:/srv/runner:ro
     command: ["uvicorn", "app.main:APP", "--host", "0.0.0.0", "--port", "9091"]
     ports:
       - "9091:9091"
