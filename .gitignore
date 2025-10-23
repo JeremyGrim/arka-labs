@@ -15,7 +15,7 @@ tests/tmp/
 Thumbs.db
 
 # Optional observability stack (Étape 6.5)
-obs/
+/obs/
 
 # Project-specific artefacts
 .project-docs/
