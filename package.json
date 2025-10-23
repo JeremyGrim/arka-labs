@@ -1,0 +1,10 @@
+{
+  "name": "arka-labs-ops",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "arka": "node ops/run-arka-stack.js",
+    "arka:down": "node ops/run-arka-stack.js --down",
+    "arka:apicheck": "node ops/run-arka-apicheck.js"
+  }
+}

@@ -9,11 +9,16 @@ from app.routers import (
     health,
     memory,
     messages,
+    messages_list,
+    meta,
     orchestrator_proxy,
     participants,
     projects,
     projects_metrics,
     routing,
+    sessions_list,
+    threads_list,
+    hp,
 )
 
 APP = FastAPI(title="ARKA-APP", version="1.0-beta")
@@ -31,11 +36,16 @@ APP.include_router(routing.router, prefix="/api")
 APP.include_router(projects.router, prefix="/api")
 APP.include_router(memory.router, prefix="/api")
 APP.include_router(messages.router, prefix="/api")
+APP.include_router(messages_list.router, prefix="/api")
+APP.include_router(meta.router, prefix="/api")
 APP.include_router(agents.router, prefix="/api")
 APP.include_router(agents_directory.router, prefix="/api")
 APP.include_router(participants.router, prefix="/api")
 APP.include_router(projects_metrics.router, prefix="/api")
 APP.include_router(orchestrator_proxy.router, prefix="/api")
+APP.include_router(sessions_list.router, prefix="/api")
+APP.include_router(threads_list.router, prefix="/api")
+APP.include_router(hp.router, prefix="/api")
 
 @APP.get("/metrics")
 def metrics():

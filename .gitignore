@@ -2,7 +2,10 @@
 .venv*/
 
 # Local databases / scratch data
-db/
+db/tmp/
+docker/db/data/
+ARKA-APP/web_old/
+ARKA-APP/web_vite_backup/
 
 # Optional temp test artefacts
 tests/tmp/
@@ -17,3 +20,7 @@ obs/
 # Project-specific artefacts
 .project-docs/
 T1_DEPLOY/
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc

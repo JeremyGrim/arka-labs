@@ -2,16 +2,19 @@
 """
 Mini implémentation ARKA_ROUTING pour l'environnement sandbox.
 
-Cette version charge les flows depuis `ARKA_OS/ARKA_FLOW/bricks/*.yaml` et expose
-les endpoints essentiels (`/catalog`, `/lookup`, `/resolve`) afin que les tests
-terrain (T1) disposent d'un GPS fonctionnel.
+Cette version charge les flows depuis la base (catalog.flows) si disponible,
+avec fallback sur `ARKA_OS/ARKA_FLOW/bricks/*.yaml`, et expose les endpoints
+essentiels (`/catalog`, `/lookup`, `/resolve`) afin que les tests terrain (T1)
+disposent d'un GPS fonctionnel.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
+from contextlib import closing
 from dataclasses import dataclass, asdict
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -19,6 +22,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import parse_qs, urlparse
 
+import psycopg2
 import yaml
 
 
@@ -34,7 +38,44 @@ class FlowItem:
         return asdict(self)
 
 
-def _load_flows() -> List[FlowItem]:
+
+SOURCE_ROUTING = os.environ.get('ROUTING_SOURCE', 'auto').lower()
+SOURCE_CATALOG = os.environ.get('CATALOG_SOURCE', SOURCE_ROUTING).lower()
+
+def _db_connection() -> psycopg2.extensions.connection:
+    return psycopg2.connect(
+        dbname=os.environ.get('POSTGRES_DB', 'arka'),
+        user=os.environ.get('POSTGRES_USER', 'arka'),
+        password=os.environ.get('POSTGRES_PASSWORD', 'arka'),
+        host=os.environ.get('POSTGRES_HOST', 'localhost'),
+        port=int(os.environ.get('POSTGRES_PORT', '5432')),
+    )
+
+def _load_flows_db() -> List[FlowItem]:
+    flows: List[FlowItem] = []
+    with closing(_db_connection()) as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT flow_ref, brick, export, name, tags
+            FROM catalog.flows
+            ORDER BY updated_at DESC
+            LIMIT 500
+            """
+        )
+        for flow_ref, brick, export, name, tags in cur.fetchall():
+            flows.append(
+                FlowItem(
+                    flow_ref=flow_ref,
+                    brick=brick,
+                    name=export,
+                    title=name or export,
+                    tags=tags or [],
+                )
+            )
+    return flows
+
+
+def _load_flows_fs() -> List[FlowItem]:
     root = Path(__file__).resolve().parent.parent  # ARKA_OS
     bricks_dir = root / "ARKA_FLOW" / "bricks"
     flows: List[FlowItem] = []
@@ -58,9 +99,26 @@ def _load_flows() -> List[FlowItem]:
                     tags=tags,
                 )
             )
+
     return flows
 
 
+def _load_flows() -> List[FlowItem]:
+    global FLOWS_SOURCE
+    if SOURCE_CATALOG in ('db', 'auto'):
+        try:
+            flows = _load_flows_db()
+            if flows or SOURCE_CATALOG == 'db':
+                FLOWS_SOURCE = 'db'
+                return flows
+        except Exception:
+            if SOURCE_CATALOG == 'db':
+                raise
+    FLOWS_SOURCE = 'fs'
+    return _load_flows_fs()
+
+
+FLOWS_SOURCE = "fs"
 FLOWS: List[FlowItem] = _load_flows()
 
 
@@ -149,7 +207,10 @@ class _RoutingHandler(BaseHTTPRequestHandler):
                 self._send_json({"ok": False, "error": f"facet {facet} non supporté"}, HTTPStatus.BAD_REQUEST)
                 return
             items = [f.to_json() for f in FLOWS]
-            self._send_json({"ok": True, "items": items})
+            payload = {"ok": True, "items": items, "source": FLOWS_SOURCE}
+            if SOURCE_CATALOG == "auto" and FLOWS_SOURCE != "db":
+                payload["fallback"] = FLOWS_SOURCE
+            self._send_json(payload)
             return
 
         if parsed.path == "/lookup":
@@ -161,11 +222,27 @@ class _RoutingHandler(BaseHTTPRequestHandler):
         if parsed.path == "/resolve":
             intent = params.get("intent", [None])[0]
             term = params.get("term", [None])[0]
+            client = params.get("client", [None])[0]
+            if SOURCE_ROUTING in ("db", "auto"):
+                try:
+                    from .routing_db_client import resolve_db  # type: ignore
+                    lookup_term = term or intent or client or ""
+                    items = resolve_db(term=lookup_term, intent=intent)
+                    if items or SOURCE_ROUTING == "db":
+                        self._send_json({"ok": True, "items": items, "source": "db"})
+                        return
+                except Exception:
+                    if SOURCE_ROUTING == "db":
+                        self._send_json({"ok": False, "error": "resolve db error"}, HTTPStatus.INTERNAL_SERVER_ERROR)
+                        return
             flow = _resolve_flow(intent, term)
             if not flow:
                 self._send_json({"ok": False, "error": "Aucun flow trouvé"}, HTTPStatus.NOT_FOUND)
             else:
-                self._send_json({"ok": True, "flow": flow.to_json()})
+                payload = {"ok": True, "flow": flow.to_json(), "source": "fs"}
+                if SOURCE_ROUTING == "auto":
+                    payload["fallback"] = "fs"
+                self._send_json(payload)
             return
 
         self._send_json({"ok": False, "error": f"endpoint inconnu: {parsed.path}"}, HTTPStatus.NOT_FOUND)

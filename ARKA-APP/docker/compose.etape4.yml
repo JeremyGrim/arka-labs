@@ -7,6 +7,11 @@ services:
       ROUTING_URL: http://arka-routing:8087
       DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-arka}:${POSTGRES_PASSWORD:-arka}@postgres:5432/${POSTGRES_DB:-arka}
       ORCH_API_KEY: ${ORCH_API_KEY:-}
+      CATALOG_SOURCE: ${CATALOG_SOURCE:-db}
+      AGENTS_SOURCE: ${AGENTS_SOURCE:-db}
+      ROUTING_SOURCE: ${ROUTING_SOURCE:-db}
+      SESSIONS_SOURCE: ${SESSIONS_SOURCE:-auto}
+      ARKA_OS_ROOT: /app/ARKA_OS
     volumes:
       - ${PWD}/ARKA-APP/server:/app:rw
       - ${PWD}/ARKA_OS:/app/ARKA_OS:ro
@@ -27,8 +32,11 @@ services:
     volumes:
       - ${PWD}/ARKA-APP/web:/app
     environment:
-      - VITE_API_URL=http://arka-app:8080/api
-    command: ["sh","-lc","npm install && npm run dev -- --host 0.0.0.0 --port 5173"]
+      - HOST=0.0.0.0
+      - PORT=5173
+      - REACT_APP_BACKEND_URL=http://arka-app:8080/api
+      - CHOKIDAR_USEPOLLING=true
+    command: ["sh","-lc","npm install && npm start"]
     ports:
       - "5173:5173"
     depends_on:
