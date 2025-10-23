@@ -24,3 +24,14 @@ T1_DEPLOY/
 __pycache__/
 **/__pycache__/
 *.pyc
+
+# JS/TS
+node_modules/
+**/node_modules/
+*.log
+
+# Builds
+dist/
+build/
+.out/
+.next/
