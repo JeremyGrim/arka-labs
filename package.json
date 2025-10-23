@@ -5,6 +5,10 @@
   "scripts": {
     "arka": "node ops/run-arka-stack.js",
     "arka:down": "node ops/run-arka-stack.js --down",
-    "arka:apicheck": "node ops/run-arka-apicheck.js"
+    "arka:apicheck": "node ops/run-arka-apicheck.js",
+    "arkamsg": "node ./bin/arkamsg"
+  },
+  "dependencies": {
+    "yaml": "^2.8.1"
   }
 }

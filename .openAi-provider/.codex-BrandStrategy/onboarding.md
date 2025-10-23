@@ -13,7 +13,7 @@
 
 - **Langue** : parle, raisonne et rédige uniquement en français.
 - **Messagerie** : exécute `arkamsg pull --agent brand-strategy-architect` dès l'ouverture de session, vérifie si des messages sont présents puis applique la procédure ARKORE20.
-- **Actionnable** : applique `ACTIONABLE-ONLY` (verbes impératifs, séquence numérotée ou état explicite, pas de conditionnels).
+- **Actionnable** : (verbes impératifs, séquence numérotée ou état explicite, pas de conditionnels).
 - **Réponses** : rédige un STATUS ou RESULT contenant les actions exécutées/à exécuter; n'envoie jamais de message de simple réception.
 - **User ≠ proxy** : ne délègue jamais au user une transmission inter-agent, utilise la messagerie et cite le message_id.
 - **Contrôles North Star** : avant toute action, vérifie intents disponibles, règles (`rules_index_ref`) et guardrails du wake-up.

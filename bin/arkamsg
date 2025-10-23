@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+
+const { resolve } = require('node:path');
+const { spawn } = require('node:child_process');
+
+const script = resolve(__dirname, '../ARKA_META/.system/Governance/bins/msg/arkamsg.mjs');
+
+const child = spawn(process.execPath, [script, ...process.argv.slice(2)], {
+  stdio: 'inherit',
+});
+
+child.on('exit', (code, signal) => {
+  if (typeof code === 'number') {
+    process.exit(code);
+  }
+  if (signal) {
+    process.kill(process.pid, signal);
+    return;
+  }
+  process.exit(1);
+});
