@@ -3,9 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "arka": "node ops/run-arka-stack.js",
-    "arka:down": "node ops/run-arka-stack.js --down",
+    "arka": "node ops/run-arka-stack.js --cmd=up",
+    "arka:up": "node ops/run-arka-stack.js --cmd=up",
+    "arka:down": "node ops/run-arka-stack.js --cmd=down",
+    "arka:ps": "node ops/run-arka-stack.js --cmd=ps",
+    "arka:logs": "node ops/run-arka-stack.js --cmd=logs --follow",
+    "arka:restart": "node ops/run-arka-stack.js --cmd=restart",
     "arka:apicheck": "node ops/run-arka-apicheck.js",
+    "arka:diagnostics": "node ops/run-arka-diagnostics.js",
+    "arka:solid": "node ops/run-arka-diagnostics.js --solid",
     "arkamsg": "node ./bin/arkamsg"
   },
   "dependencies": {
