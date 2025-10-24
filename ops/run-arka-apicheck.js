@@ -16,6 +16,11 @@ function parseCliArgs(argv) {
       out.baseUrl = token.slice(7);
     } else if (token.startsWith('--api-key=')) {
       out.apiKey = token.slice(10);
+    } else if (token.startsWith('--retries=')) {
+      const value = Number.parseInt(token.slice(10), 10);
+      if (!Number.isNaN(value) && value > 0) {
+        out.retries = value;
+      }
     } else if (token === '--help') {
       out.help = true;
     }
@@ -55,30 +60,72 @@ const DEFAULT_ENDPOINTS = [
       }
       return false;
     },
+    fallback: [
+      { path: '/api/resolve?term=rgpd', type: 'bff' },
+      { path: '/resolve?term=rgpd', type: 'router' },
+    ],
   },
 ];
 
-const HELP = `Usage: node ops/run-arka-apicheck.js [--json] [--base=<url>] [--api-key=<key>]
+const HELP = `Usage: node ops/run-arka-apicheck.js [--json] [--base=<url>] [--api-key=<key>] [--retries=<n>]
 Environment:
   BACKEND_URL       Base URL (default: http://localhost:8080)
   BACKEND_API_KEY   Optional X-API-Key header value`;
 
+async function requestWithValidation({ fetchImpl, url, headers, validator }) {
+  const res = await fetchImpl(url, { headers });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  const ok = validator ? validator(json) : true;
+  if (!ok) throw new Error('payload invalid');
+  return { status: 'ok' };
+}
+
 async function runEndpointCheck({ fetchImpl, baseUrl, apiKey, endpoint, silent = false }) {
-  const url = new URL(endpoint.path, baseUrl).toString();
   if (!silent) process.stdout.write(`  • ${endpoint.name} … `);
   try {
-    const res = await fetchImpl(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(apiKey ? { 'X-API-Key': apiKey } : {}),
-      },
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    const ok = endpoint.validate ? endpoint.validate(json) : true;
-    if (!ok) throw new Error('payload invalid');
-    if (!silent) console.log('ok');
-    return { endpoint: endpoint.name, status: 'ok' };
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(apiKey ? { 'X-API-Key': apiKey } : {}),
+    };
+    const validator = endpoint.validate;
+    const attemptTargets = [
+      { url: new URL(endpoint.path, baseUrl).toString(), headers },
+    ];
+    if (endpoint.fallback) {
+      for (const fb of endpoint.fallback) {
+        if (fb.type === 'router') {
+          const routerBase = process.env.ROUTER_URL || 'http://localhost:8087';
+          attemptTargets.push({
+            url: new URL(fb.path, routerBase).toString(),
+            headers: { 'Content-Type': 'application/json' },
+            suppress: true,
+          });
+        } else {
+          attemptTargets.push({
+            url: new URL(fb.path, baseUrl).toString(),
+            headers,
+            suppress: true,
+          });
+        }
+      }
+    }
+    let lastError;
+    for (const target of attemptTargets) {
+      try {
+        const retval = await requestWithValidation({
+          fetchImpl,
+          url: target.url,
+          headers: target.headers,
+          validator,
+        });
+        if (!silent && !target.suppress) console.log('ok');
+        return { endpoint: endpoint.name, ...retval };
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    throw lastError || new Error('endpoint unavailable');
   } catch (err) {
     if (!silent) console.log('fail');
     return { endpoint: endpoint.name, status: 'fail', error: err.message };
@@ -90,6 +137,8 @@ async function runApiCheck(options = {}) {
   const apiKey = options.apiKey ?? process.env.BACKEND_API_KEY;
   const endpoints = options.endpoints || DEFAULT_ENDPOINTS;
   const fetchImpl = globalThis.fetch;
+  const retries = options.retries && options.retries > 0 ? options.retries : 1;
+  const retryDelayMs = options.retryDelayMs ?? 1500;
 
   if (typeof fetchImpl !== 'function') {
     throw new Error('Node.js fetch API not available. Require Node.js >= 18.');
@@ -100,8 +149,25 @@ async function runApiCheck(options = {}) {
   }
   const results = [];
   for (const endpoint of endpoints) {
+    let attempt = 0;
+    let entry;
     // eslint-disable-next-line no-await-in-loop
-    const entry = await runEndpointCheck({ fetchImpl, baseUrl, apiKey, endpoint, silent: options.silent });
+    while (attempt < retries) {
+      const silent = options.silent || attempt > 0;
+      // eslint-disable-next-line no-await-in-loop
+      entry = await runEndpointCheck({ fetchImpl, baseUrl, apiKey, endpoint, silent });
+      if (entry.status === 'ok' || attempt === retries - 1) {
+        break;
+      }
+      attempt += 1;
+      if (!options.silent) {
+        console.log(`    ↻ retrying ${endpoint.name} (${attempt + 1}/${retries})`);
+      }
+      if (retryDelayMs > 0) {
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+      }
+    }
     results.push(entry);
   }
   const failures = results.filter((entry) => entry.status !== 'ok');
@@ -118,6 +184,7 @@ async function main() {
     const { results, failures, baseUrl } = await runApiCheck({
       baseUrl: cli.baseUrl,
       apiKey: cli.apiKey,
+      retries: cli.retries,
     });
     if (cli.json) {
       console.log(JSON.stringify({ baseUrl, results }, null, 2));

@@ -1,0 +1,3 @@
+id: outbox-arka-business-owner
+channel: arka-business-owner
+mode: append-only

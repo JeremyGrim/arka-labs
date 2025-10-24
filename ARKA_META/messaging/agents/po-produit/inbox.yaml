@@ -1,0 +1,3 @@
+id: inbox-po-produit
+channel: po-produit
+mode: append-only

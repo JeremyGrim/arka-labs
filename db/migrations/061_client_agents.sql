@@ -6,6 +6,8 @@ SELECT
   a.role,
   a.ref,
   a.onboarding_path,
+  a.state,
+  a.context_status,
   a.created_at
 FROM projects.agent_refs a
 JOIN projects.clients c ON c.id = a.client_id;

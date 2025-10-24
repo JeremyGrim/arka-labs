@@ -81,32 +81,41 @@ if (config.enableVisualEdits) {
 }
 
 // Setup dev server with visual edits and/or health check
-if (config.enableVisualEdits || config.enableHealthCheck) {
-  webpackConfig.devServer = (devServerConfig) => {
-    // Apply visual edits dev server setup if enabled
+const attachDevServerConfig = (devServerConfig = {}) => {
+  let finalConfig = devServerConfig;
+
+  if (config.enableVisualEdits || config.enableHealthCheck) {
     if (config.enableVisualEdits && setupDevServer) {
-      devServerConfig = setupDevServer(devServerConfig);
+      finalConfig = setupDevServer(finalConfig);
     }
 
-    // Add health check endpoints if enabled
     if (config.enableHealthCheck && setupHealthEndpoints && healthPluginInstance) {
-      const originalSetupMiddlewares = devServerConfig.setupMiddlewares;
-
-      devServerConfig.setupMiddlewares = (middlewares, devServer) => {
-        // Call original setup if exists
+      const originalSetupMiddlewares = finalConfig.setupMiddlewares;
+      finalConfig.setupMiddlewares = (middlewares, devServer) => {
+        let appliedMiddlewares = middlewares;
         if (originalSetupMiddlewares) {
-          middlewares = originalSetupMiddlewares(middlewares, devServer);
+          appliedMiddlewares = originalSetupMiddlewares(appliedMiddlewares, devServer);
         }
-
-        // Setup health endpoints
         setupHealthEndpoints(devServer, healthPluginInstance);
-
-        return middlewares;
+        return appliedMiddlewares;
       };
     }
+  }
 
-    return devServerConfig;
+  const proxyTarget = process.env.REACT_APP_PROXY_TARGET || 'http://arka-app:8080';
+  finalConfig.proxy = {
+    ...(finalConfig.proxy || {}),
+    '/api': {
+      target: proxyTarget,
+      changeOrigin: true,
+      secure: false,
+      ws: false,
+    },
   };
-}
+
+  return finalConfig;
+};
+
+webpackConfig.devServer = attachDevServerConfig;
 
 module.exports = webpackConfig;

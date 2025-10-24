@@ -6,6 +6,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from app.routers import (
     agents,
     agents_directory,
+    agents_runtime,
     health,
     memory,
     messages,
@@ -40,6 +41,7 @@ APP.include_router(messages_list.router, prefix="/api")
 APP.include_router(meta.router, prefix="/api")
 APP.include_router(agents.router, prefix="/api")
 APP.include_router(agents_directory.router, prefix="/api")
+APP.include_router(agents_runtime.router, prefix="/api")
 APP.include_router(participants.router, prefix="/api")
 APP.include_router(projects_metrics.router, prefix="/api")
 APP.include_router(orchestrator_proxy.router, prefix="/api")

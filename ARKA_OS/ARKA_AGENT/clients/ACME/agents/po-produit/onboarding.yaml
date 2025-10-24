@@ -1,0 +1,49 @@
+id: ONBOARDING-ACME-po-produit
+version: 1.0.0
+client: ACME
+agent_id: po-produit
+role: Référent Produit — gouvernance & priorisation
+profile_ref: ARKPR08-PROFILES-CATALOG:profiles.po-produit
+capabilities_ref: clients/ACME/ARKAA19-AGENT-CAPABILITIES.yaml#agents.po-produit
+expert_ref: client/acme/experts/ARKA_AGENT60-referent-generic.yaml
+wakeup_ref: client/acme/wakeup/ARKAA08-WAKEUP-PO_PRODUIT.yaml
+supported_intents:
+  - REVIEW_BRIEF
+  - ORGANIZE_AND_PRIORITIZE
+  - MANAGE_THREADS
+  - REQUEST_EVIDENCE_IF_NEEDED
+  - VALIDATE_OR_REJECT
+  - PAUSE
+runtime:
+  startup:
+    sequence:
+      - resolve_profile
+      - mount_memory
+      - load_capabilities
+      - load_expert
+      - check_messages
+    default_intent: REVIEW_BRIEF
+    dispatch_mode: governance_mode
+messaging:
+  general_ref: ARKA_META/messaging/general.yaml
+  inbox_ref: ARKA_META/messaging/agents/po-produit/inbox.yaml
+  outbox_ref: ARKA_META/messaging/agents/po-produit/outbox.yaml
+  ack_policy: immediate
+memory:
+  dir: ARKA_META/.system/.mem/po-produit/
+  index: ARKA_META/.system/.mem/po-produit/index.json
+policy:
+  ack_policy: immediate
+  dispatch_mode: governance_mode
+context_refs:
+  project: ARKAA21-PROJECT-CONTEXT:vars
+  client: clients/ACME/client.yaml
+mission_context:
+  project: Construction Arka-labs avec ARKA_OS
+  focus: Cohérence produit, arbitrage roadmap et garde-fous de livraison
+  triggers_sensibles:
+    - marque
+    - legal
+    - data
+  evidence_pack_policy: mandatory
+source_wakeup: client/acme/wakeup/ARKAA08-WAKEUP-PO_PRODUIT.yaml

@@ -7,164 +7,440 @@ summary: >
   compact ARKPR09 (type:actions) au lieu de listes explicites
 
 exports:
-  # Configuration du parser
   permissions_format: "ARKPR09"
   permissions_resolver_ref: "ARKPR09-PERMISSIONS-FORMAT:resolver"
-  
   agents:
     # === AGP ===
     agp: &agp_permissions
       use_profile: agp-architecte-gouvernance-produit
       permissions:
-        - "feature:*"        # Tout sur features
-        - "epic:*"           # Tout sur epics
-        - "us:*"             # Tout sur US
-        - "order:*"          # Ordres de gouvernance
-        - "decision:*"       # Décisions AGP
-        - "*:r"              # Read sur tout
-        - "*:v"              # Validate sur tout
-        - "-delete"          # Jamais delete
+        - "feature:*"
+        - "epic:*"
+        - "us:*"
+        - "order:*"
+        - "decision:*"
+        - "*:r"
+        - "*:v"
+        - "-delete"
       default_map: FEATURE_CREATE
-
-    agp-architecte-gouvernance-produit:
-      <<: *agp_permissions
-      
     # === PMO ===
     arka-product-manager-officer:
       use_profile: pmo-orchestrator
       permissions:
-        - "feature:*"      # Gestion complète structure
+        - "feature:*"
         - "epic:*"
         - "us:*"
         - "ticket:*"
-        - "document:cr"    # Création docs seulement
+        - "document:cr"
         - "report:cr"
-        - "workflow:*"     # Orchestration workflows
-        - "-delete"        # Jamais de suppression
+        - "workflow:*"
+        - "-delete"
       default_map: US_CREATE
-      
     # === LEAD DEV ===
     lead-dev-batisseur:
       use_profile: lead-dev-batisseur
       permissions:
-        - "ticket:*"         # Tout sur tickets
-        - "document:cru"     # Create/Read/Update docs
-        - "-feature"         # Pas touche aux features
-        - "-epic"            # Pas touche aux epics
-        - "us:*"             # Tout sur US
-        - "-order"           # Pas d'ordres
+        - "ticket:*"
+        - "document:cru"
+        - "-feature"
+        - "-epic"
+        - "us:*"
+        - "-order"
       default_map: TICKET_CREATE
-      
     # === DEVOPS ===
     devops-guardian:
       use_profile: devops-guardian
       permissions:
-        - "document:*"       # Tous les docs techniques
-        - "report:*"         # Tous les rapports
-        - "us:*"             # Tout sur US
-        - "*:rs"             # Read + Status sur tout
-        - "-create"          # Ne crée rien de structurel
+        - "document:*"
+        - "report:*"
+        - "us:*"
+        - "*:rs"
+        - "-create"
       default_map: REPORT_CREATE
-      
     # === QA ===
     qa-testeur:
       use_profile: qa-testeur
       permissions:
-        - "ticket:cru"       # Create/Read/Update tickets (bugs)
-        - "report:*"         # Tous les rapports de test
-        - "document:cr"      # Create/Read docs de test
-        - "-feature"         # Pas de structure
+        - "ticket:cru"
+        - "report:*"
+        - "document:cr"
+        - "-feature"
         - "-epic"
-        - "us:*"             # Tout sur US
+        - "us:*"
       default_map: TICKET_CREATE
-      
     # === CORE ARCHIVISTE ===
-    core-archivist:
+    core-archivist: &core_archivist_permissions
       use_profile: core-archivist
       permissions:
-        - "document:*"       # Gestion documentaire gouvernance
+        - "document:*"
         - "report:*"
         - "analysis:*"
         - "plan:*"
         - "order:*"
         - "decision:*"
         - "workflow:plan"
-        - "*:r"              # Lecture globale
-        - "-feature"         # Pas d'accès structure produit
+        - "*:r"
+        - "-feature"
         - "-epic"
         - "-us"
         - "-ticket"
-        - "-delete"          # Suppression uniquement sur validation Owner
+        - "-delete"
       default_map: DOCUMENT_CREATE
-      
     # === ARKA SCRIBE ===
     arka-scribe:
       use_profile: arka-scribe
       permissions:
-        - "document:cru"     # Création/màj de mémos et CR
-        - "report:cr"        # Rapports de synthèse
-        - "analysis:r"       # Lecture analyses
-        - "plan:r"           # Lecture plans
-        - "-feature"         # Pas de structure produit
+        - "document:cru"
+        - "report:cr"
+        - "analysis:r"
+        - "plan:r"
+        - "-feature"
         - "-epic"
-        - "-order"           # Pas de gouvernance directe
+        - "-order"
       default_map: DOCUMENT_CREATE
-      
     # === ARCHIVIST ORCHESTRATOR ===
     arka-archivist-orchestrator:
       use_profile: arka-archivist-orchestrator
       permissions:
-        - "document:cru"     # Préparer CR/RFC
-        - "report:cru"       # Rapports d'arborescence
-        - "plan:cru"         # Plans d'exécution / rollback
-        - "order:cu"         # Créer/mettre à jour les ordres Owner
-        - "workflow:plan"    # Orchestration des actions à déléguer
-        - "*:r"              # Lecture globale pour audit
-        - "-delete"          # Jamais de suppression directe
-        - "-feature"         # Pas de modification structurelle
+        - "document:cru"
+        - "report:cru"
+        - "plan:cru"
+        - "order:cu"
+        - "workflow:plan"
+        - "*:r"
+        - "-delete"
+        - "-feature"
         - "-epic"
       default_map: DOCUMENT_CREATE
-
     # === CORE SCRIBE ===
     core-scribe:
       use_profile: arka-scribe
       permissions:
-        - "document:cru"     # Gestion des mémos/CR
-        - "report:cru"       # Rapports d'audit
-        - "analysis:cru"     # Analyses gouvernance
-        - "order:r"          # Lecture des ordres
-        - "workflow:plan"    # Planification des audits/optimisations
-        - "*:r"              # Lecture globale
+        - "document:cru"
+        - "report:cru"
+        - "analysis:cru"
+        - "order:r"
+        - "workflow:plan"
+        - "*:r"
         - "-feature"
         - "-epic"
         - "-delete"
       default_map: DOCUMENT_CREATE
-      
     # === MARKET RESEARCH ===
     market-research-specialist:
       use_profile: market-research-specialist
       permissions:
-        - "document:*"       # Documents de recherche
-        - "analysis:*"       # Analyses marché
-        - "report:cr"        # Rapports
+        - "document:*"
+        - "analysis:*"
+        - "report:cr"
       default_map: ANALYSIS_CREATE
-      
-    # === UX ===
+    # === UX/UI DESIGN ===
     ux-ui-design-guardian:
       use_profile: ux-ui-design-guardian
       permissions:
-        - "document:*"       # Specs design
-        - "plan:cru"         # Plans UX
-        - "*:r"              # Read everything
+        - "document:*"
+        - "plan:cru"
+        - "*:r"
+      default_map: DOCUMENT_CREATE
+    # === FSX (ajouté) ===
+    fsx-extreme-fullstack:
+      use_profile: fsx-extreme-fullstack
+      permissions:
+        - "ticket:*"      # Interventions d’urgence sur tickets
+        - "us:*"          # Accès complet aux user stories pour débloquer les incidents
+        - "document:cru"  # Création et mise à jour de documents d’intervention
+        - "report:cru"    # Rapports d’incident
+        - "*:r"           # Lecture globale
+        - "*:v"           # Validation globale
+        - "-delete"       # Pas de suppression
+      default_map: ORDER_ESCALATE
+    # === AGENT CREATOR CLIENT ===
+    agent-creator-client:
+      use_profile: agent-creator-client
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
       default_map: DOCUMENT_CREATE
 
+    # === BRAND STRATEGY ARCHITECT ===
+    brand-strategy-architect:
+      use_profile: brand-strategy-architect
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cr"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: STRATEGY_CREATE
+
+    # === COMPENSATION & BENEFITS ANALYST ===
+    compensation-benefits-analyst:
+      use_profile: compensation-benefits-analyst
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: ANALYSIS_CREATE
+
+    # === CONTENT STRATEGY MANAGER ===
+    content-strategy-manager:
+      use_profile: content-strategy-manager
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: CONTENT_CREATE
+
+    # === EMPLOYEE EXPERIENCE DESIGNER ===
+    employee-experience-designer:
+      use_profile: employee-experience-designer
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: ANALYSIS_CREATE
+
+    # === GEMINI OWNER SOURCING ===
+    gemini-owner-sourcing:
+      use_profile: gemini-owner-sourcing
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: SOURCING
+
+    # === GROWTH HACKER SPECIALIST ===
+    growth-hacker-specialist:
+      use_profile: growth-hacker-specialist
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: EXPERIMENT_CREATE
+
+    # === HR TRANSFORMATION SPECIALIST ===
+    hr-transformation-specialist:
+      use_profile: hr-transformation-specialist
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cru"
+        - "plan:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: PROCESS_DESIGN
+
+    # === LEARNING & DEVELOPMENT STRATEGIST ===
+    learning-development-strategist:
+      use_profile: learning-development-strategist
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: PROGRAM_CREATE
+
+    # === MARKETING ANALYTICS EXPERT ===
+    marketing-analytics-expert:
+      use_profile: marketing-analytics-expert
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: ANALYSIS_CREATE
+
+    # === MISSION QUALIFIER ===
+    mission-qualifier: &mission_qualifier_permissions
+      use_profile: mission-qualifier
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cru"
+        - "decision:cr"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: DECISION_PUBLISH
+
+    arka-business-owner:
+      <<: *core_archivist_permissions
+      use_profile: arka-business-owner
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cru"
+        - "plan:cru"
+        - "decision:cr"
+        - "order:cr"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+        - "-ticket"
+        - "-adr"
+      default_map: DECISION_PUBLISH
+
+    po-rh:
+      <<: *mission_qualifier_permissions
+      use_profile: po-rh
+    po-marketing:
+      <<: *mission_qualifier_permissions
+      use_profile: po-marketing
+    po-produit:
+      <<: *mission_qualifier_permissions
+      use_profile: po-produit
+    po-tech:
+      <<: *mission_qualifier_permissions
+      use_profile: po-tech
+    po-operations:
+      <<: *mission_qualifier_permissions
+      use_profile: po-operations
+    po-conformite-donnees:
+      <<: *mission_qualifier_permissions
+      use_profile: po-conformite-donnees
+    po-data-ia:
+      <<: *mission_qualifier_permissions
+      use_profile: po-data-ia
+    po-finance-performance:
+      <<: *mission_qualifier_permissions
+      use_profile: po-finance-performance
+    po-developpement-commercial:
+      <<: *mission_qualifier_permissions
+      use_profile: po-developpement-commercial
+
+    # === OUTREACH STRATEGIST ===
+    outreach-strategist:
+      use_profile: outreach-strategist
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: DOCUMENT_CREATE
+
+    # === PIPELINE TRACKER ===
+    pipeline-tracker:
+      use_profile: pipeline-tracker
+      permissions:
+        - "report:cru"
+        - "analysis:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: REPORT_CREATE
+
+    # === POSITIONING EXPERT ===
+    positioning-expert:
+      use_profile: positioning-expert
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: DOCUMENT_CREATE
+
+    # === SCRIBE ===
+    scribe:
+      use_profile: scribe
+      permissions:
+        - "document:cru"
+        - "report:cru"
+        - "analysis:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: DOCUMENT_CREATE
+
+    # === SECURITY COMPLIANCE ARCHITECT ===
+    security-compliance-architect:
+      use_profile: security-compliance-architect
+      permissions:
+        - "document:cru"
+        - "analysis:cru"
+        - "report:cru"
+        - "order:cu"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: REPORT_CREATE
+
+    # === SPEC WRITER ===
+    spec-writer:
+      use_profile: spec-writer
+      permissions:
+        - "feature:cru"
+        - "epic:cru"
+        - "us:cru"
+        - "document:cru"
+        - "*:r"
+        - "*:v"
+        - "-delete"
+      default_map: FEATURE_CREATE
+
+    # === TECHNICAL ARCHITECT ===
+    technical-architect:
+      use_profile: technical-architect
+      permissions:
+        - "adr:cru"
+        - "plan:cru"
+        - "analysis:cru"
+        - "document:cru"
+        - "*:r"
+        - "*:v"
+        - "-feature"
+        - "-epic"
+      default_map: ADR_CREATE
 contracts:
   invariants:
     - "Chaque use_profile existe dans ARKPR08"
     - "Format permissions suit ARKPR09 syntax"
     - "Parser ARKPR09 résout vers ARKORE12 action_keys"
-    
-requires:
-  - "ARKPR09-PERMISSIONS-FORMAT@>=1.0.0"
-  - "ARKPR08-PROFILES-CATALOG@>=1.1.0"
-  - "ARKORE12-ACTION-KEYS@>=2.0.0"  # Après ajout des 95 actions
+  requires:
+    - "ARKPR09-PERMISSIONS-FORMAT@>=1.0.0"
+    - "ARKPR08-PROFILES-CATALOG@>=1.1.0"
+    - "ARKORE12-ACTION-KEYS@>=2.0.0"

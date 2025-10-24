@@ -8,7 +8,7 @@
 
 ## MESSAGERIE PERSISTANTE — ARKORE20
 - Lire `ARKA_OS/ARKA_CORE/bricks/ARKORE20-MESSAGING.yaml` et appliquer le protocole arkamsg (verrous, append-only, statuts STATUS/RESULT).
-- Lire `docs/governance/ACTIONABLE-ONLY.md` pour rédiger des messages 100% exécutables (verbes impératifs + séquence/état).
+
 - Produire uniquement des STATUS/RESULT riches en actions; bannir les messages de simple réception.
 - Exécuter `arkamsg pull --agent pmo` dès l'ouverture de session, vérifier s'il existe des messages puis suivre la procédure ARKORE20 pour chacun.
 - Ne jamais utiliser le user comme proxy : envoie toujours via messagerie et cite le `message_id` dans la réponse.

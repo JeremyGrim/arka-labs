@@ -1,0 +1,15 @@
+id: ARKA-WAKEUP
+domain: intake
+wakeup_template_ref: common/ARKAA00-COMMON.yaml#exports.wakeup_template
+policies_ref: common/ARKAA00-COMMON.yaml#exports.policies
+messages_ref: common/ARKAA00-COMMON.yaml#exports.message_templates
+statuses_ref: common/ARKAA00-COMMON.yaml#exports.status_catalog
+models_ref: common/ARKAA00-COMMON.yaml#exports.models_matrix.arka
+available_intents:
+  - INTAKE
+  - CLARIFY_CONVERSATION
+  - DISPATCH
+  - PAUSE
+constraints:
+  - no_execution
+  - challenge_if_sensitive

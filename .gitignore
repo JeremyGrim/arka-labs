@@ -16,6 +16,8 @@ Thumbs.db
 
 # Optional observability stack (Étape 6.5)
 /obs/
+# Local Postgres volume
+ARKA-DOCKER/docker/db/data_pg*/
 
 # Project-specific artefacts
 .project-docs/
@@ -38,3 +40,4 @@ build/
 
 # Ops tooling artefacts
 ops/solid_pass/reports/
+ops/solid_pass/.env

@@ -33,6 +33,16 @@ exports:
     security-compliance-architect:  { rights: security_compliance_architect_rights, limits: moderate, tags: [security, compliance] }
     agp:
       right_ref: ARKPR05-RIGHTS:agp_rights
+    arka-business-owner:            { rights: core_archivist_rights,      limits: moderate, tags: [arka, intake, governance] }
+    po-rh:                          { rights: mission_qualifier_rights,   limits: strict,   tags: [referent, rh, governance] }
+    po-marketing:                   { rights: mission_qualifier_rights,   limits: strict,   tags: [referent, marketing, governance] }
+    po-produit:                     { rights: mission_qualifier_rights,   limits: strict,   tags: [referent, produit, governance] }
+    po-tech:                        { rights: mission_qualifier_rights,   limits: strict,   tags: [referent, tech, governance] }
+    po-operations:                  { rights: mission_qualifier_rights,   limits: strict,   tags: [referent, operations, governance] }
+    po-conformite-donnees:          { rights: mission_qualifier_rights,   limits: strict,   tags: [referent, conformite, data] }
+    po-data-ia:                     { rights: mission_qualifier_rights,   limits: strict,   tags: [referent, data, ia] }
+    po-finance-performance:         { rights: mission_qualifier_rights,   limits: strict,   tags: [referent, finance, performance] }
+    po-developpement-commercial:    { rights: mission_qualifier_rights,   limits: strict,   tags: [referent, commercial, governance] }
 contracts:
   invariants:
     - "rights exist in ARKPR05"

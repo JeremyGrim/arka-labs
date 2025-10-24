@@ -4,8 +4,6 @@ import "@/index.css";
 import App from "@/App";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
+// Radix portals + React 19 strict double render déclenchaient un removeChild runtime error en dev.
+// On désactive StrictMode pour garantir la stabilité pendant l'intervention d'urgence.
+root.render(<App />);

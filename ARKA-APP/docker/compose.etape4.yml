@@ -34,7 +34,8 @@ services:
     environment:
       - HOST=0.0.0.0
       - PORT=5173
-      - REACT_APP_BACKEND_URL=http://arka-app:8080/api
+      - REACT_APP_BACKEND_URL=/api
+      - REACT_APP_PROXY_TARGET=http://arka-app:8080
       - CHOKIDAR_USEPOLLING=true
     command: ["sh","-lc","npm install && npm start"]
     ports:

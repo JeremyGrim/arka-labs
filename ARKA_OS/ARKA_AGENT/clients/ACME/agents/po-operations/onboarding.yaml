@@ -1,0 +1,49 @@
+id: ONBOARDING-ACME-po-operations
+version: 1.0.0
+client: ACME
+agent_id: po-operations
+role: Référent Opérations — pilotage & conformité
+profile_ref: ARKPR08-PROFILES-CATALOG:profiles.po-operations
+capabilities_ref: clients/ACME/ARKAA19-AGENT-CAPABILITIES.yaml#agents.po-operations
+expert_ref: client/acme/experts/ARKA_AGENT60-referent-generic.yaml
+wakeup_ref: client/acme/wakeup/ARKAA08-WAKEUP-PO_OPERATIONS.yaml
+supported_intents:
+  - REVIEW_BRIEF
+  - ORGANIZE_AND_PRIORITIZE
+  - MANAGE_THREADS
+  - REQUEST_EVIDENCE_IF_NEEDED
+  - VALIDATE_OR_REJECT
+  - PAUSE
+runtime:
+  startup:
+    sequence:
+      - resolve_profile
+      - mount_memory
+      - load_capabilities
+      - load_expert
+      - check_messages
+    default_intent: REVIEW_BRIEF
+    dispatch_mode: governance_mode
+messaging:
+  general_ref: ARKA_META/messaging/general.yaml
+  inbox_ref: ARKA_META/messaging/agents/po-operations/inbox.yaml
+  outbox_ref: ARKA_META/messaging/agents/po-operations/outbox.yaml
+  ack_policy: immediate
+memory:
+  dir: ARKA_META/.system/.mem/po-operations/
+  index: ARKA_META/.system/.mem/po-operations/index.json
+policy:
+  ack_policy: immediate
+  dispatch_mode: governance_mode
+context_refs:
+  project: ARKAA21-PROJECT-CONTEXT:vars
+  client: clients/ACME/client.yaml
+mission_context:
+  project: Construction Arka-labs avec ARKA_OS
+  focus: Priorisation Ops, pilotage capacité et respect des contraintes concurrence
+  triggers_sensibles:
+    - marque
+    - legal
+    - data
+  evidence_pack_policy: mandatory
+source_wakeup: client/acme/wakeup/ARKAA08-WAKEUP-PO_OPERATIONS.yaml

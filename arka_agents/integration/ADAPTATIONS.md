@@ -1,0 +1,9 @@
+# Adaptations pour brancher ARKA et les Référents au système existant
+
+- **Messagerie persistante** : continuer à utiliser `NT‑CHALLENGE`, `NT‑IMPACT` et `RESULT`, en append‑only avec verrous d’écriture. Les messages entrants destinés à ARKA transitent par son inbox, et les messages sortants vers les Référents utilisent les canaux sectoriels.
+- **Références communes** : tous les fichiers `WAKEUP.yaml` et `PROFILE.yaml` des Référents et d’ARKA pointent vers `common/ARKAA00-COMMON.yaml` pour les politiques, les gabarits et les statuts.
+- **Cadrage conversationnel** : adapter le moteur d’orchestration pour supporter une phase de clarification non bornée en nombre de questions. Le flux `ARKA_INTAKE_CONVERSATIONNEL` s’exécute tant que la clarté du besoin n’atteint pas le seuil.
+- **Routing** : ARKA choisit un Référent selon le domaine identifié dans la demande une fois le cadrage clair. Le Référent reçoit le brief, le valide, priorise, ouvre/ferme les threads d’exécution et contrôle la conformité ; il ne produit pas de documents.
+- **Concurrence** : appliquer la politique commune (2 agents actifs par thread, squad ≤ 5). Les Référents veillent à ce qu’aucun thread ne viole ces limites.
+- **Evidence et budget documentaire** : chaque `RESULT` doit inclure un pack de preuves complet (artefacts, logs, décisions). Les Référents s’assurent que le budget documentaire (1 principal + 2 annexes max) est respecté et qu’on préfère la mise à jour à la duplication.
+- **Préparation multi‑équipes/PMO** : ces adaptations tiennent compte des futures extensions (multi‑équipes et PMO), sans les activer. Les dossiers `future/` contiennent des guides à consulter le moment venu.

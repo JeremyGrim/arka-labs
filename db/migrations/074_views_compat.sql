@@ -22,6 +22,8 @@ BEGIN
              ar.role,
              ar.ref,
              ar.onboarding_path,
+             ar.state,
+             ar.context_status,
              ar.created_at
       FROM projects.agent_refs ar
       JOIN projects.clients c ON c.id = ar.client_id;
@@ -34,6 +36,8 @@ BEGIN
              ar.role,
              ar.ref,
              ar.onboarding_path,
+             ar.state,
+             ar.context_status,
              ar.created_at
       FROM projects.agent_refs ar;
     $$;

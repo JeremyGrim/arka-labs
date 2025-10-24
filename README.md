@@ -84,6 +84,7 @@ cd ../web
 npm install
 npm run dev # http://localhost:3000
 ```
+> L’UI React communique avec le BFF via `http://localhost:8080/api` (défini dans les variables d’environnement Docker). Aucun hostname interne (`arka-app`) n’est exposé au navigateur, ce qui garantit le même comportement pour la future app desktop.
 
 ### 4.5 Tests essentiels
 ```bash
@@ -100,8 +101,8 @@ Un jeu de commandes npm simplifie le pilotage du chantier depuis la racine du d�
 
 - `npm run arka[:up]` / `npm run arka:down` — démarre ou arrête la stack docker (profils `--profile=core|t1|full|minimal`, options `--services`, `--no-build`, `--logs`, etc.).
 - `npm run arka:ps`, `npm run arka:logs -- --services=arka-app` — inspecte l’état des services et suit les journaux ciblés.
-- `npm run arka:apicheck [--json]` — smoke BFF (health, hp/summary, catalog, routing…) avec sortie optionnelle JSON.
-- `npm run arka:diagnostics [--solid]` — agrège checks BFF + health endpoints Runner/Orchestrateur/Adapters et, avec `--solid`, relance la passe SOLID (nécessite Python ≥ 3.11).
+- `npm run arka:apicheck [--json --retries=3]` — smoke BFF (health, hp/summary, catalog, routing…) avec sortie optionnelle JSON et retries configurables.
+- `npm run arka:diagnostics [--retries=3 --targets=router,runner --solid]` — agrège checks BFF + health endpoints (router/runner/orchestrateur/adapters détectés) et peut relancer la passe SOLID (`--solid`, nécessite Python ≥ 3.11).
 
 Tous les scripts acceptent `--help` pour lister les options disponibles.
 

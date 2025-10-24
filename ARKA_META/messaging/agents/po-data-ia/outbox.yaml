@@ -1,0 +1,3 @@
+id: outbox-po-data-ia
+channel: po-data-ia
+mode: append-only

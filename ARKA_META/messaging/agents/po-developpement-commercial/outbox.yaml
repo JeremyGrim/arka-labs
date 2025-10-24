@@ -1,0 +1,3 @@
+id: outbox-po-developpement-commercial
+channel: po-developpement-commercial
+mode: append-only

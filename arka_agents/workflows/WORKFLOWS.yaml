@@ -1,0 +1,30 @@
+id: WORKFLOWS-T1-ARKA-REFERENTS
+version: '2.0'
+flows:
+  - name: ARKA_INTAKE_CONVERSATIONNEL
+    owner: arka
+    steps:
+      - INTAKE
+      - CLARIFY_UNTIL_CLEAR
+      - DISPATCH_TO_REFERENT
+  - name: REFERENT_CONTROL
+    owner: referent
+    steps:
+      - REVIEW_BRIEF
+      - PRIORITIZE
+      - OPEN_OR_CLOSE_THREAD
+      - REQUEST_EVIDENCE_IF_NEEDED
+      - APPROVE_OR_REJECT
+  - name: SENSITIVE_GUARD
+    owner: referent
+    rule: if brand|legal|data -> BLOCK & CHALLENGE
+rules:
+  concurrency:
+    active_agents_max_per_thread: 2
+    squad_size_max: 5
+  doc_budget:
+    main: 1
+    annexes_max: 2
+  evidence_required: true
+  arka_no_execution: true
+  referent_no_execution: true

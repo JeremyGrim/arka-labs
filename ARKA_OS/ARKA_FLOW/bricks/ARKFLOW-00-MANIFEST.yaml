@@ -83,3 +83,93 @@ workflows_catalog:
   description: Diag → roadmap → gate → déploiement.
   family: PEOPLE
   flow_ref: ARKFLOW-04F-WORKFLOWS-PEOPLE:HR_CHANGE_CHAIN
+- intent: ARKA:INTAKE
+  title: Cadrage conversationnel ARKA
+  description: Intake → clarification → dispatch vers référent sectoriel.
+  family: ARKA
+  tags:
+  - arka
+  - intake
+  flow_ref: ARKFLOW-04G-WORKFLOWS-ARKA:ARKA_INTAKE_CONVERSATIONNEL
+- intent: REFERENT:RH
+  title: Référent RH
+  description: Contrôle, arbitrage et priorisation du secteur RH.
+  family: REFERENT
+  tags:
+  - referent
+  - rh
+  flow_ref: ARKFLOW-04G-WORKFLOWS-ARKA:REFERENT_CONTROL_RH
+- intent: REFERENT:MARKETING
+  title: Référent Marketing
+  description: Contrôle et alignement des missions marketing.
+  family: REFERENT
+  tags:
+  - referent
+  - marketing
+  flow_ref: ARKFLOW-04G-WORKFLOWS-ARKA:REFERENT_CONTROL_MARKETING
+- intent: REFERENT:PRODUIT
+  title: Référent Produit
+  description: Priorisation et conformité produit.
+  family: REFERENT
+  tags:
+  - referent
+  - produit
+  flow_ref: ARKFLOW-04G-WORKFLOWS-ARKA:REFERENT_CONTROL_PRODUIT
+- intent: REFERENT:TECH
+  title: Référent Tech
+  description: Contrôle des choix techniques et arbitrage des threads tech.
+  family: REFERENT
+  tags:
+  - referent
+  - tech
+  flow_ref: ARKFLOW-04G-WORKFLOWS-ARKA:REFERENT_CONTROL_TECH
+- intent: REFERENT:OPERATIONS
+  title: Référent Opérations
+  description: Pilotage et arbitrage des missions Ops.
+  family: REFERENT
+  tags:
+  - referent
+  - operations
+  flow_ref: ARKFLOW-04G-WORKFLOWS-ARKA:REFERENT_CONTROL_OPERATIONS
+- intent: REFERENT:CONFORMITE_DONNEES
+  title: Référent Conformité & Données
+  description: Contrôle des sujets conformité et gouvernance données.
+  family: REFERENT
+  tags:
+  - referent
+  - conformite
+  - data
+  flow_ref: ARKFLOW-04G-WORKFLOWS-ARKA:REFERENT_CONTROL_CONFORMITE_DONNEES
+- intent: REFERENT:DATA_IA
+  title: Référent Data & IA
+  description: Arbitrage des missions Data & IA et respect des guardrails.
+  family: REFERENT
+  tags:
+  - referent
+  - data
+  - ia
+  flow_ref: ARKFLOW-04G-WORKFLOWS-ARKA:REFERENT_CONTROL_DATA_IA
+- intent: REFERENT:FINANCE_PERFORMANCE
+  title: Référent Finance & Performance
+  description: Contrôle des missions finance et performance.
+  family: REFERENT
+  tags:
+  - referent
+  - finance
+  flow_ref: ARKFLOW-04G-WORKFLOWS-ARKA:REFERENT_CONTROL_FINANCE_PERFORMANCE
+- intent: REFERENT:DEVELOPPEMENT_COMMERCIAL
+  title: Référent Développement Commercial
+  description: Arbitrage commercial et priorisation des actions terrain.
+  family: REFERENT
+  tags:
+  - referent
+  - commercial
+  flow_ref: ARKFLOW-04G-WORKFLOWS-ARKA:REFERENT_CONTROL_DEVELOPPEMENT_COMMERCIAL
+- intent: REFERENT:SENSITIVE_GUARD
+  title: Garde sensible Référent
+  description: Blocage immédiat et NT-CHALLENGE sur triggers marque/légal/données.
+  family: REFERENT
+  tags:
+  - referent
+  - guard
+  flow_ref: ARKFLOW-04G-WORKFLOWS-ARKA:REFERENT_SENSITIVE_GUARD

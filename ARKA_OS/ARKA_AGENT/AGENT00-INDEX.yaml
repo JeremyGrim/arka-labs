@@ -29,6 +29,8 @@ experts:
   SpecWriter: experts/spec-writer/expert.yaml
   TechnicalArchitect: experts/tech-architecte/expert.yaml
   UXUIDesignGuardian: experts/uxuidesign-guardian/expert.yaml
+  ArkaBusinessOwner: client/acme/experts/ARKA_AGENT16-arka-business-owner.yaml
+  ReferentGeneric: client/acme/experts/ARKA_AGENT60-referent-generic.yaml
 clients:
   ACME:
     agp: clients/ACME/agents/agp/onboarding.yaml
@@ -59,3 +61,13 @@ clients:
     spec-writer: clients/ACME/agents/spec-writer/onboarding.yaml
     technical-architect: clients/ACME/agents/technical-architect/onboarding.yaml
     ux-ui-design-guardian: clients/ACME/agents/ux-ui-design-guardian/onboarding.yaml
+    arka-business-owner: clients/ACME/agents/arka-business-owner/onboarding.yaml
+    po-rh: clients/ACME/agents/po-rh/onboarding.yaml
+    po-marketing: clients/ACME/agents/po-marketing/onboarding.yaml
+    po-produit: clients/ACME/agents/po-produit/onboarding.yaml
+    po-tech: clients/ACME/agents/po-tech/onboarding.yaml
+    po-operations: clients/ACME/agents/po-operations/onboarding.yaml
+    po-conformite-donnees: clients/ACME/agents/po-conformite-donnees/onboarding.yaml
+    po-data-ia: clients/ACME/agents/po-data-ia/onboarding.yaml
+    po-finance-performance: clients/ACME/agents/po-finance-performance/onboarding.yaml
+    po-developpement-commercial: clients/ACME/agents/po-developpement-commercial/onboarding.yaml

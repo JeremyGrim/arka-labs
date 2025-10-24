@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: ARKA-APP/web/src/config/api.js
+@@
+-export const apiCall = async (endpoint, options = {}) => {
+-  const url = joinUrl(API_BASE_URL, endpoint);
++export const apiCall = async (endpoint, options = {}) => {
++  let url = endpoint;
++  if (!/^https?:/i.test(endpoint) && !endpoint.startsWith('/api')) {
++    url = joinUrl(API_BASE_URL, endpoint);
++  }
++  if (!/^https?:/i.test(endpoint) && endpoint.startsWith('/api')) {
++    url = endpoint;
++  }
+*** End Patch

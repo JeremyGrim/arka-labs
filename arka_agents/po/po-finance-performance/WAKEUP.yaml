@@ -1,0 +1,16 @@
+id: PO-FINANCE-PERFORMANCE-WAKEUP
+domain: finance-performance
+wakeup_template_ref: common/ARKAA00-COMMON.yaml#exports.wakeup_template
+policies_ref: common/ARKAA00-COMMON.yaml#exports.policies
+messages_ref: common/ARKAA00-COMMON.yaml#exports.message_templates
+statuses_ref: common/ARKAA00-COMMON.yaml#exports.status_catalog
+models_ref: common/ARKAA00-COMMON.yaml#exports.models_matrix.po
+available_intents:
+  - REVIEW_BRIEF
+  - PRIORITIZE
+  - OPEN_OR_CLOSE_THREAD
+  - REQUEST_EVIDENCE
+  - APPROVE_OR_REJECT
+  - PAUSE
+constraints:
+  - no_execution

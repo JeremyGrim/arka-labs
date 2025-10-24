@@ -1,0 +1,44 @@
+id: ONBOARDING-ACME-arka-business-owner
+version: 1.0.0
+client: ACME
+agent_id: arka-business-owner
+role: Business Owner conversationnel (intake + dispatch)
+profile_ref: ARKPR08-PROFILES-CATALOG:profiles.arka-business-owner
+capabilities_ref: clients/ACME/ARKAA19-AGENT-CAPABILITIES.yaml#agents.arka-business-owner
+expert_ref: client/acme/experts/ARKA_AGENT16-arka-business-owner.yaml
+wakeup_ref: client/acme/wakeup/ARKAA08-WAKEUP-ARKA_BUSINESS_OWNER.yaml
+supported_intents:
+  - INTAKE
+  - CLARIFY_CONVERSATION
+  - DISPATCH
+  - PAUSE
+runtime:
+  startup:
+    sequence:
+      - resolve_profile
+      - mount_memory
+      - load_capabilities
+      - load_expert
+      - check_messages
+    default_intent: INTAKE
+    dispatch_mode: intake_first
+messaging:
+  general_ref: ARKA_META/messaging/general.yaml
+  inbox_ref: ARKA_META/messaging/agents/arka-business-owner/inbox.yaml
+  outbox_ref: ARKA_META/messaging/agents/arka-business-owner/outbox.yaml
+  ack_policy: immediate
+memory:
+  dir: ARKA_META/.system/.mem/arka-business-owner/
+  index: ARKA_META/.system/.mem/arka-business-owner/index.json
+policy:
+  ack_policy: immediate
+  dispatch_mode: intake_first
+context_refs:
+  project: ARKAA21-PROJECT-CONTEXT:vars
+  client: clients/ACME/client.yaml
+mission_context:
+  project: Construction Arka-labs avec ARKA_OS
+  focus: Cadrage conversationnel et orchestration multi-référents
+  clarity_threshold: 0.8
+  evidence_pack_policy: mandatory
+source_wakeup: client/acme/wakeup/ARKAA08-WAKEUP-ARKA_BUSINESS_OWNER.yaml

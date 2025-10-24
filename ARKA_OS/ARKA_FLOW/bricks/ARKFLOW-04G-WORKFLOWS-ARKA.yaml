@@ -1,0 +1,141 @@
+id: ARKFLOW-04G-WORKFLOWS-ARKA
+version: 1.0.0
+exports:
+  - ARKA_INTAKE_CONVERSATIONNEL
+  - REFERENT_CONTROL_RH
+  - REFERENT_CONTROL_MARKETING
+  - REFERENT_CONTROL_PRODUIT
+  - REFERENT_CONTROL_TECH
+  - REFERENT_CONTROL_OPERATIONS
+  - REFERENT_CONTROL_CONFORMITE_DONNEES
+  - REFERENT_CONTROL_DATA_IA
+  - REFERENT_CONTROL_FINANCE_PERFORMANCE
+  - REFERENT_CONTROL_DEVELOPPEMENT_COMMERCIAL
+  - REFERENT_SENSITIVE_GUARD
+common:
+  policy:
+    concurrency:
+      active_agents_max_per_thread: 2
+      squad_size_max: 5
+    doc_budget:
+      main: 1
+      annexes_max: 2
+    evidence_required: true
+  invariants:
+    - arka_no_execution
+    - referent_no_execution
+workflows:
+  ARKA_INTAKE_CONVERSATIONNEL:
+    - name: INTAKE
+      role: arka.business_owner
+    - name: CLARIFY_UNTIL_CLEAR
+      role: arka.business_owner
+    - name: DISPATCH_TO_REFERENT
+      role: arka.business_owner
+  REFERENT_CONTROL_RH:
+    - name: REVIEW_BRIEF
+      role: referent.rh
+    - name: PRIORITIZE
+      role: referent.rh
+    - name: OPEN_OR_CLOSE_THREAD
+      role: referent.rh
+    - name: REQUEST_EVIDENCE_IF_NEEDED
+      role: referent.rh
+    - name: APPROVE_OR_REJECT
+      role: referent.rh
+  REFERENT_CONTROL_MARKETING:
+    - name: REVIEW_BRIEF
+      role: referent.marketing
+    - name: PRIORITIZE
+      role: referent.marketing
+    - name: OPEN_OR_CLOSE_THREAD
+      role: referent.marketing
+    - name: REQUEST_EVIDENCE_IF_NEEDED
+      role: referent.marketing
+    - name: APPROVE_OR_REJECT
+      role: referent.marketing
+  REFERENT_CONTROL_PRODUIT:
+    - name: REVIEW_BRIEF
+      role: referent.produit
+    - name: PRIORITIZE
+      role: referent.produit
+    - name: OPEN_OR_CLOSE_THREAD
+      role: referent.produit
+    - name: REQUEST_EVIDENCE_IF_NEEDED
+      role: referent.produit
+    - name: APPROVE_OR_REJECT
+      role: referent.produit
+  REFERENT_CONTROL_TECH:
+    - name: REVIEW_BRIEF
+      role: referent.tech
+    - name: PRIORITIZE
+      role: referent.tech
+    - name: OPEN_OR_CLOSE_THREAD
+      role: referent.tech
+    - name: REQUEST_EVIDENCE_IF_NEEDED
+      role: referent.tech
+    - name: APPROVE_OR_REJECT
+      role: referent.tech
+  REFERENT_CONTROL_OPERATIONS:
+    - name: REVIEW_BRIEF
+      role: referent.operations
+    - name: PRIORITIZE
+      role: referent.operations
+    - name: OPEN_OR_CLOSE_THREAD
+      role: referent.operations
+    - name: REQUEST_EVIDENCE_IF_NEEDED
+      role: referent.operations
+    - name: APPROVE_OR_REJECT
+      role: referent.operations
+  REFERENT_CONTROL_CONFORMITE_DONNEES:
+    - name: REVIEW_BRIEF
+      role: referent.conformite_donnees
+    - name: PRIORITIZE
+      role: referent.conformite_donnees
+    - name: OPEN_OR_CLOSE_THREAD
+      role: referent.conformite_donnees
+    - name: REQUEST_EVIDENCE_IF_NEEDED
+      role: referent.conformite_donnees
+    - name: APPROVE_OR_REJECT
+      role: referent.conformite_donnees
+  REFERENT_CONTROL_DATA_IA:
+    - name: REVIEW_BRIEF
+      role: referent.data_ia
+    - name: PRIORITIZE
+      role: referent.data_ia
+    - name: OPEN_OR_CLOSE_THREAD
+      role: referent.data_ia
+    - name: REQUEST_EVIDENCE_IF_NEEDED
+      role: referent.data_ia
+    - name: APPROVE_OR_REJECT
+      role: referent.data_ia
+  REFERENT_CONTROL_FINANCE_PERFORMANCE:
+    - name: REVIEW_BRIEF
+      role: referent.finance_performance
+    - name: PRIORITIZE
+      role: referent.finance_performance
+    - name: OPEN_OR_CLOSE_THREAD
+      role: referent.finance_performance
+    - name: REQUEST_EVIDENCE_IF_NEEDED
+      role: referent.finance_performance
+    - name: APPROVE_OR_REJECT
+      role: referent.finance_performance
+  REFERENT_CONTROL_DEVELOPPEMENT_COMMERCIAL:
+    - name: REVIEW_BRIEF
+      role: referent.developpement_commercial
+    - name: PRIORITIZE
+      role: referent.developpement_commercial
+    - name: OPEN_OR_CLOSE_THREAD
+      role: referent.developpement_commercial
+    - name: REQUEST_EVIDENCE_IF_NEEDED
+      role: referent.developpement_commercial
+    - name: APPROVE_OR_REJECT
+      role: referent.developpement_commercial
+  REFERENT_SENSITIVE_GUARD:
+    - name: BLOCK_AND_CHALLENGE
+      role: referent.guard
+      payload:
+        triggers:
+          - brand
+          - legal
+          - data

@@ -1,0 +1,55 @@
+# Template de cadrage pour ARKA et AGP
+
+id: template-cadrage
+description: >
+  Modèle de cadrage destiné à être rempli par ARKA lors de la phase de clarification. Il permet de
+  calculer une note de clarté et de complétude afin de déterminer si le brief est suffisamment
+  précis pour lancer l'exécution. Il sert également de référence pour la validation finale par
+  ARKA et par l'AGP (gouvernance produit).
+
+fields:
+  mission: "Description claire et concise de la mission ou de l'objectif à atteindre."
+  context: "Informations contextuelles pertinentes (organisation, historique, environnement)."
+  domain: "Domaine ou secteur concerné (RH, Marketing, Tech, etc.)."
+  actors: "Acteurs impliqués dans la mission (utilisateur, ARKA, Référent, Squad)."
+  objectives: "Objectifs opérationnels et stratégiques associés à la mission."
+  deliverables: "Livrables attendus (format, nombre, niveau de détail)."
+  constraints:
+    brand: "Contraintes liées à la marque et à la ligne éditoriale."
+    legal: "Contraintes légales et réglementaires (RGPD, CNIL, etc.)."
+    data: "Contraintes liées à la gestion des données (privacy, sécurité)."
+  risks: "Risques identifiés (incohérence, non‑conformité, dérive documentaire)."
+  acceptance_criteria: "Critères de validation du livrable (qualité, conformité, performance)."
+  priority: "Priorité de la mission (P0, P1, P2) et justification."
+  impact_map: "Surfaces impactées (brand, UX, légal, data, ops) et niveau d'impact."
+  notes: "Notes complémentaires ou questions en suspens."
+
+scoring:
+  method: >
+    La note de cadrage est calculée en évaluant la complétude des champs critiques. Chaque champ
+    critique vaut un certain nombre de points s'il est renseigné. Le score final est la somme des
+    points divisée par 100 pour obtenir une valeur entre 0 et 1. Un cadrage est considéré
+    suffisant si la note est supérieure ou égale à 0,8 (80 %).
+  weights:
+    mission: 10
+    context: 10
+    objectives: 10
+    deliverables: 10
+    constraints:
+      brand: 5
+      legal: 5
+      data: 5
+    risks: 10
+    acceptance_criteria: 10
+    priority: 5
+    impact_map: 10
+    actors: 5
+
+usage:
+  - ARKA remplit ce modèle en arrière‑plan pendant la phase de cadrage, au fur et à mesure de la
+    conversation avec l'utilisateur.
+  - Après chaque échange, ARKA met à jour les champs renseignés et recalcule la note de cadrage.
+  - Lorsque la note atteint ou dépasse 0,8, ARKA synthétise le brief et le propose à
+    l'utilisateur pour validation, puis le transmet au Référent sectoriel.
+  - L'AGP utilise ce même modèle pour valider la complétude du cadrage avant de permettre
+    l'exécution ou la priorisation d'un travail.

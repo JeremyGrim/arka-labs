@@ -8,9 +8,10 @@
     "arka:down": "node ops/run-arka-stack.js --cmd=down",
     "arka:ps": "node ops/run-arka-stack.js --cmd=ps",
     "arka:logs": "node ops/run-arka-stack.js --cmd=logs --follow",
-    "arka:restart": "node ops/run-arka-stack.js --cmd=restart",
+    "arka:restart": "npm run arka:down -- --profile=full && npm run arka:up -- --profile=full -- --build",
     "arka:apicheck": "node ops/run-arka-apicheck.js",
     "arka:diagnostics": "node ops/run-arka-diagnostics.js",
+    "arka:safemode": "npm run arka:down -- --profile=core && npm run arka:up -- --profile=core -- --no-build && npm run arka:diagnostics -- --retries=3 --targets=router,runner --solid",
     "arka:solid": "node ops/run-arka-diagnostics.js --solid",
     "arkamsg": "node ./bin/arkamsg"
   },
@@ -18,3 +19,4 @@
     "yaml": "^2.8.1"
   }
 }
+

@@ -1,0 +1,16 @@
+id: PO-MARKETING-WAKEUP
+domain: marketing
+wakeup_template_ref: common/ARKAA00-COMMON.yaml#exports.wakeup_template
+policies_ref: common/ARKAA00-COMMON.yaml#exports.policies
+messages_ref: common/ARKAA00-COMMON.yaml#exports.message_templates
+statuses_ref: common/ARKAA00-COMMON.yaml#exports.status_catalog
+models_ref: common/ARKAA00-COMMON.yaml#exports.models_matrix.po
+available_intents:
+  - REVIEW_BRIEF
+  - ORGANIZE_AND_PRIORITIZE
+  - MANAGE_THREADS
+  - REQUEST_EVIDENCE_IF_NEEDED
+  - VALIDATE_OR_REJECT
+  - PAUSE
+constraints:
+  - no_execution

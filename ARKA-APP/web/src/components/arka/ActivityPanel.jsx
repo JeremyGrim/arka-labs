@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Loader2, Power } from 'lucide-react';
 import { apiCall } from '../../config/api';
 
 const formatActionLabel = (action) => {
@@ -24,6 +24,7 @@ const ActivityPanel = () => {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [runtime, setRuntime] = useState({ sessions: [], fallback: null, error: null });
 
   useEffect(() => {
     let active = true;
@@ -31,11 +32,29 @@ const ActivityPanel = () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await apiCall('/api/hp/summary');
+        const [summaryData, runtimeData] = await Promise.all([
+          apiCall('/api/hp/summary'),
+          apiCall('/api/agents/runtime/sessions?client=ACME&provider=codex').catch((err) => ({
+            sessions: [],
+            fallback: err?.status === 503 ? err.detail || err.message : null,
+            error: err?.message || null,
+          })),
+        ]);
         if (!active) {
           return;
         }
-        setSummary(data);
+        setSummary(summaryData);
+        if (runtimeData) {
+          setRuntime({
+            sessions: runtimeData.sessions || [],
+            fallback: runtimeData.fallback || null,
+            error: runtimeData.error || null,
+            client: runtimeData.client,
+            provider: runtimeData.provider,
+          });
+        } else {
+          setRuntime({ sessions: [], fallback: null, error: null });
+        }
       } catch (err) {
         if (active) {
           setError(err.message || 'Impossible de charger le résumé HP');
@@ -55,12 +74,15 @@ const ActivityPanel = () => {
   const actions = summary?.actions || [];
   const journal = summary?.journal || [];
   const validations = summary?.validations || { delivery: 0, architecture: 0 };
+  const runtimeSessions = runtime?.sessions || [];
 
   const todayMetrics = useMemo(
     () => [
       {
         label: 'Sessions actives',
-        value: actions.find((action) => (action.label || '').toLowerCase().includes('session'))?.value || 0,
+        value:
+          runtimeSessions.length ||
+          actions.find((action) => (action.label || '').toLowerCase().includes('session'))?.value || 0,
       },
       {
         label: 'Flows publiés',
@@ -77,6 +99,23 @@ const ActivityPanel = () => {
     ],
     [actions, validations]
   );
+
+  const formatDuration = (seconds) => {
+    if (!seconds && seconds !== 0) {
+      return '—';
+    }
+    if (seconds < 60) {
+      return `${seconds}s`;
+    }
+    if (seconds < 3600) {
+      const minutes = Math.floor(seconds / 60);
+      const remain = seconds % 60;
+      return `${minutes}m${remain ? ` ${remain}s` : ''}`;
+    }
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}h${minutes ? ` ${minutes}m` : ''}`;
+  };
 
   if (loading) {
     return (
@@ -148,6 +187,42 @@ const ActivityPanel = () => {
               <p className="text-xs text-gray-400 mb-1">Architecture</p>
               <p className="text-lg font-semibold text-white">{validations.architecture || 0}</p>
             </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-medium text-gray-400 mb-3">Sessions runtime</h3>
+          <div className="space-y-3">
+            {runtimeSessions.map((session) => (
+              <div key={session.session} className="p-3 bg-[#1a1f2e] rounded-lg border border-gray-800">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-sm text-gray-200">
+                    <Power className="text-emerald-400" size={14} />
+                    <span>{session.agent_slug || 'agent inconnu'}</span>
+                  </div>
+                  <span className="text-xs text-gray-500">{session.session}</span>
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Uptime : {formatDuration(session.uptime_seconds)}
+                </div>
+                {session.created_at && (
+                  <div className="text-xs text-gray-500">
+                    Démarré : {formatTimestamp(session.created_at)}
+                  </div>
+                )}
+              </div>
+            ))}
+            {runtimeSessions.length === 0 && (
+              <p className="text-xs text-gray-500">Aucune session tmux active côté backend.</p>
+            )}
+            {runtime?.fallback && (
+              <p className="text-xs text-blue-400">
+                Fallback CLI : {runtime.fallback}
+              </p>
+            )}
+            {runtime?.error && (
+              <p className="text-xs text-red-300">{runtime.error}</p>
+            )}
           </div>
         </div>
 

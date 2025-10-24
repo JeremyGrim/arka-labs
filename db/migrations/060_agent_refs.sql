@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS projects.agent_refs (
   role TEXT,
   ref TEXT NOT NULL UNIQUE,           -- e.g. 'clients/ACME/agents/pmo'
   onboarding_path TEXT NOT NULL,      -- e.g. 'ARKA_OS/ARKA_AGENT/clients/ACME/agents/pmo/onboarding.yaml'
+  state TEXT NOT NULL DEFAULT 'awake',
+  context_status TEXT NOT NULL DEFAULT 'nominal',
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

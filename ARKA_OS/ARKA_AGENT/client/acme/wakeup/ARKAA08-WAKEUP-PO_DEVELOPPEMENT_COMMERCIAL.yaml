@@ -1,0 +1,24 @@
+id: ARKAA08-WAKEUP-PO_DEVELOPPEMENT_COMMERCIAL
+version: 1.0.0
+agent_id: po-developpement-commercial
+use_profile_ref: ARKPR08-PROFILES-CATALOG:profiles.po-developpement-commercial
+capabilities_ref: ARKAA19-AGENT-CAPABILITIES:agents.po-developpement-commercial
+expert_ref: client/acme/experts/ARKA_AGENT60-referent-generic.yaml
+memory:
+  dir: ARKA_META/.system/.mem/po-developpement-commercial/
+  index: ARKA_META/.system/.mem/po-developpement-commercial/index.json
+messaging:
+  general_ref: ARKA_META/messaging/general.yaml
+  inbox_ref: ARKA_META/messaging/agents/po-developpement-commercial/inbox.yaml
+  outbox_ref: ARKA_META/messaging/agents/po-developpement-commercial/outbox.yaml
+  ack_policy: immediate
+startup:
+  sequence:
+    - resolve_profile
+    - mount_memory
+    - load_capabilities
+    - load_expert
+    - check_messages
+  default_intent: REVIEW_BRIEF
+  dispatch_mode: governance_mode
+routing_ref: ARKA_ROUTING

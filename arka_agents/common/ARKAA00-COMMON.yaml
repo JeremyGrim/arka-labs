@@ -1,0 +1,88 @@
+id: ARKAA00-COMMON
+version: '2.2'
+exports:
+  policies:
+    parallel_agents_limit: 2
+    team_size_max: 5
+    doc_budget_per_thread:
+      main: 1
+      annexes_max: 2
+    duplication_guard:
+      minimal_coverage_threshold: 0.6
+    ask_before_risky_change:
+      triggers:
+      - brand
+      - legal
+      - data
+      require_nt_challenge: true
+    self_review_mandatory: true
+    po_no_execution: true
+    arka_no_execution: true
+  status_catalog:
+    allowed:
+    - TODO
+    - IN_PROGRESS
+    - BLOCKED
+    - OBSOLETE
+    end_of_work: RESULT
+  message_templates:
+    NT_CHALLENGE:
+      type: NT-CHALLENGE
+    NT_IMPACT:
+      type: NT-IMPACT
+    RESULT:
+      type: RESULT
+  wakeup_template:
+    invariants:
+    - respecter policies.doc_budget_per_thread
+    - préférer update à duplication
+    - émettre NT-CHALLENGE si mismatch/impact sensible
+    - produire coherence_report avant RESULT
+    required_outputs:
+    - coherence_report
+  models_matrix:
+    arka:
+      primary: gpt-5-high
+      fallback1: claude-opus
+      fallback2: gpt-5-medium
+      local32: null
+    po:
+      primary: gpt-5-high
+      fallback1: claude-sonnet
+      fallback2: gpt-5-medium
+      local32: null
+    exec_leaddev:
+      primary: gpt-5-codex-high
+      fallback1: gpt-5-codex-medium
+      fallback2: gpt-5-high
+      local32: code-llama-13b
+    exec_devops:
+      primary: gpt-5-codex-high
+      fallback1: gpt-5-high
+      fallback2: gpt-5-codex-medium
+      local32: code-llama-13b
+    exec_qa:
+      primary: gpt-5-codex-high
+      fallback1: gpt-5-high
+      fallback2: gpt-5-codex-medium
+      local32: starcoder2-7b
+    strategy:
+      primary: gpt-5-high
+      fallback1: claude-opus
+      fallback2: gpt-5-medium
+      local32: null
+    research:
+      primary: gpt-5-high
+      fallback1: claude-opus
+      fallback2: gpt-5-medium
+      local32: llama3-8b
+    content:
+      primary: gpt-5-high
+      fallback1: claude-sonnet
+      fallback2: gpt-5-medium
+      local32: mistral-7b
+    security:
+      primary: claude-opus
+      fallback1: gpt-5-high
+      fallback2: claude-sonnet
+      local32: null

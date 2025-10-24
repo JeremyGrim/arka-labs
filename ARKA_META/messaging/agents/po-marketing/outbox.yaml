@@ -1,0 +1,3 @@
+id: outbox-po-marketing
+channel: po-marketing
+mode: append-only

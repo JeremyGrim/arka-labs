@@ -1,0 +1,3 @@
+id: outbox-po-rh
+channel: po-rh
+mode: append-only

@@ -1,0 +1,3 @@
+id: outbox-po-finance-performance
+channel: po-finance-performance
+mode: append-only

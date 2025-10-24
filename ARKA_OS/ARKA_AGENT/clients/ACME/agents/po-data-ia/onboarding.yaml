@@ -1,0 +1,49 @@
+id: ONBOARDING-ACME-po-data-ia
+version: 1.0.0
+client: ACME
+agent_id: po-data-ia
+role: Référent Data & IA — contrôle & arbitrage
+profile_ref: ARKPR08-PROFILES-CATALOG:profiles.po-data-ia
+capabilities_ref: clients/ACME/ARKAA19-AGENT-CAPABILITIES.yaml#agents.po-data-ia
+expert_ref: client/acme/experts/ARKA_AGENT60-referent-generic.yaml
+wakeup_ref: client/acme/wakeup/ARKAA08-WAKEUP-PO_DATA_IA.yaml
+supported_intents:
+  - REVIEW_BRIEF
+  - ORGANIZE_AND_PRIORITIZE
+  - MANAGE_THREADS
+  - REQUEST_EVIDENCE_IF_NEEDED
+  - VALIDATE_OR_REJECT
+  - PAUSE
+runtime:
+  startup:
+    sequence:
+      - resolve_profile
+      - mount_memory
+      - load_capabilities
+      - load_expert
+      - check_messages
+    default_intent: REVIEW_BRIEF
+    dispatch_mode: governance_mode
+messaging:
+  general_ref: ARKA_META/messaging/general.yaml
+  inbox_ref: ARKA_META/messaging/agents/po-data-ia/inbox.yaml
+  outbox_ref: ARKA_META/messaging/agents/po-data-ia/outbox.yaml
+  ack_policy: immediate
+memory:
+  dir: ARKA_META/.system/.mem/po-data-ia/
+  index: ARKA_META/.system/.mem/po-data-ia/index.json
+policy:
+  ack_policy: immediate
+  dispatch_mode: governance_mode
+context_refs:
+  project: ARKAA21-PROJECT-CONTEXT:vars
+  client: clients/ACME/client.yaml
+mission_context:
+  project: Construction Arka-labs avec ARKA_OS
+  focus: Gouvernance Data & IA, arbitrage des budgets LLM et conformité usage
+  triggers_sensibles:
+    - marque
+    - legal
+    - data
+  evidence_pack_policy: mandatory
+source_wakeup: client/acme/wakeup/ARKAA08-WAKEUP-PO_DATA_IA.yaml

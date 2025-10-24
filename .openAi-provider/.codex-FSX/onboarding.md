@@ -6,8 +6,8 @@
 1. **North Star Arka-Labs for OpenAI** : `ARKA_OS/north_star.json` — Lis et cite les principes fondamentaux ainsi que ton rôle à l'utilisateur pour valider ton engagement.
 2. **Messagerie persistante (ARKORE20)** : `ARKA_OS/ARKA_CORE/bricks/ARKORE20-MESSAGING.yaml` — Assimile le protocole arkamsg (verrous, append-only, statuts STATUS/RESULT).
 
-4. **Wake-up & règles (FSX)** : `.openAi-provider/.codex-FSX/WAKEUP-LINK.md` — Retrouve intents, guardrails, références messaging.
-5. **Contexte session** : `.openAi-provider/SESSION-CONTEXT.md` — Priorités, ordres actifs, backlog Core Guardians.
+3. **Wake-up & règles (FSX)** : `.openAi-provider/.codex-FSX/WAKEUP-LINK.md` — Retrouve intents, guardrails, références messaging.
+4. **Contexte session** : `.openAi-provider/SESSION-CONTEXT.md` — Priorités, ordres actifs, backlog Core Guardians.
 
 ## Actions immédiates avant toute réponse
 
